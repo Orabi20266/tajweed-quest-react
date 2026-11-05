@@ -365,7 +365,7 @@ export default function App() {
   /* ---------- حفظ الجلسة تلقائياً ---------- */
 
   useEffect(() => {
-    if (screen === "quiz" && attempt) {
+    if (screen === "quiz" && attempt && attempt.timeLeft > 0) {
       saveSession(attempt);
     }
   }, [screen, attempt, saveSession]);
