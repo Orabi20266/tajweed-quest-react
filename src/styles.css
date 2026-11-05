@@ -1,0 +1,2308 @@
+/* =========================================================
+   رحلة الإتقان — نسخة React
+   تصميم عربي مرح، متجاوب، مع حركات خفيفة واحترام تقليل الحركة
+   ========================================================= */
+
+:root {
+  --violet: #7c3aed;
+  --violet-dark: #5b21b6;
+  --violet-soft: #ede9fe;
+  --violet-line: #ddd6fe;
+  --teal: #0d9488;
+  --teal-soft: #ccfbf1;
+  --amber: #f59e0b;
+  --pink: #ec4899;
+  --green: #16a34a;
+  --red: #dc2626;
+  --ink: #241a4d;
+  --muted: #6f6a8a;
+  --line: #ece8fb;
+  --card: #ffffff;
+  --shadow: 0 26px 55px -32px rgba(76, 29, 149, 0.45);
+  --shadow-soft: 0 14px 30px -24px rgba(76, 29, 149, 0.45);
+  --radius: 26px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Tajawal", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 6%, #ede9fe 0, transparent 36%),
+    radial-gradient(circle at 88% 0%, #fce7f3 0, transparent 32%),
+    radial-gradient(circle at 50% 104%, #ccfbf1 0, transparent 42%),
+    #f8f7ff;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: var(--violet);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px dotted #c4b5fd;
+}
+
+a:hover {
+  color: var(--pink);
+}
+
+:focus-visible {
+  outline: 3px solid #a78bfa;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #ddd6fe;
+  color: var(--violet-dark);
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== خلفية زخرفية ===== */
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(12px);
+  opacity: 0.55;
+  animation: floatBlob 14s ease-in-out infinite;
+}
+
+.blob-1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #ddd6fe, transparent 70%);
+  top: -110px;
+  inset-inline-start: -80px;
+}
+
+.blob-2 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, #fbcfe8, transparent 70%);
+  top: 38%;
+  inset-inline-end: -110px;
+  animation-delay: -4s;
+}
+
+.blob-3 {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, #99f6e4, transparent 70%);
+  bottom: -120px;
+  inset-inline-start: 32%;
+  animation-delay: -8s;
+}
+
+@keyframes floatBlob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0) scale(1.06);
+  }
+}
+
+.sparkle {
+  position: absolute;
+  color: #c4b5fd;
+  font-size: 1.2rem;
+  opacity: 0.7;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.sparkle-1 {
+  top: 14%;
+  inset-inline-start: 6%;
+}
+
+.sparkle-2 {
+  top: 62%;
+  inset-inline-end: 8%;
+  animation-delay: -1.4s;
+  color: #5eead4;
+}
+
+.sparkle-3 {
+  bottom: 12%;
+  inset-inline-start: 22%;
+  animation-delay: -2.6s;
+  color: #f9a8d4;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(0.8) rotate(0deg);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.2) rotate(18deg);
+    opacity: 0.9;
+  }
+}
+
+/* ===== الحاوية العامة ===== */
+.screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 18px 18px 46px;
+  animation: screenIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.card {
+  background: var(--card);
+  border: 2px solid #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ===== الأزرار ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 16px;
+  padding: 11px 20px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+  box-shadow: 0 14px 24px -14px rgba(124, 58, 237, 0.95);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 28px -14px rgba(124, 58, 237, 0.9);
+}
+
+.btn-soft {
+  color: var(--violet-dark);
+  background: var(--violet-soft);
+  border: 2px solid var(--violet-line);
+}
+
+.btn-soft:hover {
+  background: #e4dcff;
+}
+
+.btn-ghost {
+  color: #6d28d9;
+  background: #fff;
+  border: 2px solid var(--line);
+}
+
+.btn-ghost:hover {
+  border-color: var(--violet-line);
+  background: #faf8ff;
+}
+
+.btn-danger {
+  color: #fff;
+  background: linear-gradient(145deg, #f87171, #dc2626);
+  box-shadow: 0 14px 24px -14px rgba(220, 38, 38, 0.9);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: #fff;
+  color: var(--violet-dark);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    border-color 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #f5f3ff;
+  border-color: var(--violet-line);
+  transform: translateY(-1px);
+}
+
+.icon-btn.danger {
+  color: #be123c;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.icon-btn.danger:hover {
+  background: #ffe4e6;
+}
+
+/* ===== الشريط العلوي ===== */
+.topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 22px;
+  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-soft);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  font-size: 1.5rem;
+  background: linear-gradient(145deg, #ede9fe, #ccfbf1);
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-soft);
+  flex-shrink: 0;
+}
+
+.brand-text {
+  min-width: 0;
+}
+
+.brand-text h1 {
+  font-family: "Baloo Bhaijaan 2", "Tajawal", sans-serif;
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #4c1d95;
+}
+
+.brand-text p {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.stars-chip {
+  color: #92400e;
+  background: #fef3c7;
+  border: 2px solid #fde68a;
+}
+
+.stars-chip b {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1rem;
+}
+
+.chip-total {
+  color: #b45309;
+  opacity: 0.75;
+  font-size: 0.78rem;
+}
+
+/* ===== الواجهة الترحيبية ===== */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+  padding: 26px 30px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 90% 15%, #fce7f3 0, transparent 45%),
+    radial-gradient(circle at 5% 90%, #ccfbf1 0, transparent 42%),
+    linear-gradient(135deg, #ffffff, #faf7ff);
+}
+
+.hero-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ddd6fe, transparent 68%);
+  top: -150px;
+  inset-inline-end: -70px;
+  pointer-events: none;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 1;
+}
+
+.eyebrow {
+  display: inline-block;
+  padding: 5px 12px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: #fff7ed;
+  border: 2px solid #fed7aa;
+  color: #b45309;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.hero-text h2 {
+  font-family: "Baloo Bhaijaan 2", "Tajawal", sans-serif;
+  font-size: 1.95rem;
+  line-height: 1.35;
+  font-weight: 800;
+  color: #3b1d7a;
+}
+
+.hero-text h2 .accent {
+  color: var(--violet);
+  position: relative;
+  white-space: nowrap;
+}
+
+.hero-text h2 .accent::after {
+  content: "";
+  position: absolute;
+  inset-inline: 2px;
+  bottom: 2px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ddd6fe;
+  z-index: -1;
+}
+
+.hero-text > p {
+  margin-top: 8px;
+  max-width: 54ch;
+  color: #5b5578;
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.85;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 92px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 2px solid #f1edff;
+  box-shadow: var(--shadow-soft);
+}
+
+.stat b {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.2rem;
+  color: #4c1d95;
+  line-height: 1.2;
+}
+
+.stat b small {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-inline-start: 1px;
+}
+
+.stat span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.overall-progress {
+  position: relative;
+  height: 10px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: #f1edff;
+  overflow: hidden;
+}
+
+.overall-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34d399, #0ea5e9);
+  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hero-mascot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-avatar {
+  width: 152px;
+  height: 152px;
+  filter: drop-shadow(0 18px 24px rgba(15, 118, 110, 0.22));
+  animation: bob 4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(-1.5deg);
+  }
+}
+
+.hero-bubble {
+  position: relative;
+  max-width: 230px;
+  padding: 9px 13px;
+  border-radius: 16px;
+  border: 2px solid #bae6fd;
+  background: #fff;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-bubble strong {
+  display: block;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.88rem;
+  color: #0f766e;
+}
+
+.hero-bubble span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #5b5578;
+  line-height: 1.6;
+}
+
+.hero-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  inset-inline-start: 50%;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-inline-end: 2px solid #bae6fd;
+  border-bottom: 2px solid #bae6fd;
+  transform: translateX(50%) rotate(45deg);
+}
+
+/* ===== بطاقة استئناف المحاولة ===== */
+.resume-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 20px;
+  border: 2px dashed #99f6e4;
+  background: linear-gradient(135deg, #ecfeff, #f0fdfa);
+  animation: screenIn 0.4s ease both;
+}
+
+.resume-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: #fff;
+  border: 2px solid #99f6e4;
+  color: #0f766e;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.resume-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.resume-body strong {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.98rem;
+  color: #115e59;
+}
+
+.resume-body p {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.resume-progress {
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: #ccfbf1;
+  overflow: hidden;
+}
+
+.resume-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2dd4bf, #0ea5e9);
+  transition: width 0.6s ease;
+}
+
+.resume-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.resume-actions .btn {
+  font-size: 0.85rem;
+  padding: 9px 14px;
+}
+
+/* ===== خريطة المراحل ===== */
+.levels-section {
+  margin-top: 24px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding-inline: 4px;
+}
+
+.section-head h2 {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.25rem;
+  color: #3b1d7a;
+}
+
+.section-hint {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+  gap: 14px;
+}
+
+.level-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 18px 16px 14px;
+  border-radius: 24px;
+  border: 2px solid #fff;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  text-align: right;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.level-card:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: var(--violet-line);
+}
+
+.level-card:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.level-strip {
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+}
+
+.level-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.level-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  font-size: 1.45rem;
+  box-shadow: 0 10px 18px -12px rgba(0, 0, 0, 0.55);
+}
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+
+.star.off {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.star.on {
+  animation: starPop 0.45s ease both;
+}
+
+@keyframes starPop {
+  0% {
+    transform: scale(0.4) rotate(-20deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.18) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+.lock-chip {
+  font-size: 1.1rem;
+  filter: grayscale(0.4);
+}
+
+.level-title {
+  display: block;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #312e5f;
+}
+
+.level-desc {
+  display: block;
+  margin-top: 3px;
+  min-height: 2.5em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.level-meta {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #6d28d9;
+  min-height: 1.2em;
+}
+
+.level-bar {
+  display: block;
+  height: 8px;
+  margin-top: 9px;
+  border-radius: 999px;
+  background: #f1edff;
+  overflow: hidden;
+}
+
+.level-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+  transition: width 0.6s ease;
+}
+
+.level-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 9px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.level-fast {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.level-fast.muted {
+  color: #9a94b3;
+  font-weight: 700;
+}
+
+.level-card.locked {
+  opacity: 0.62;
+  filter: saturate(0.55);
+  background: #fbfaff;
+  cursor: not-allowed;
+}
+
+.level-card.passed {
+  border-color: #bbf7d0;
+}
+
+/* ===== التذييل ===== */
+.footer {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.save-pill {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.save-pill.local {
+  color: #6d28d9;
+  background: #f5f3ff;
+  border: 1.5px solid var(--violet-line);
+}
+
+.save-pill.linked {
+  color: #0f766e;
+  background: var(--teal-soft);
+  border: 1.5px solid #99f6e4;
+}
+
+/* =========================================================
+   شاشة الاختبار
+   ========================================================= */
+.quiz-screen {
+  max-width: 900px;
+}
+
+.quiz-topbar {
+  position: sticky;
+  top: 10px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-soft);
+}
+
+.exit-btn {
+  flex-shrink: 0;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.quiz-level {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.quiz-level-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 10px 16px -12px rgba(0, 0, 0, 0.6);
+}
+
+.quiz-level-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.quiz-level-text strong {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.95rem;
+  color: #3b1d7a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quiz-level-text span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.quiz-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.question-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--violet-soft);
+  color: #6d28d9;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.question-chip span {
+  opacity: 0.65;
+  font-size: 0.75rem;
+}
+
+/* ===== المؤقت ===== */
+.timer-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 2px solid #99f6e4;
+  background: var(--teal-soft);
+  color: #0f766e;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.timer-icon {
+  font-size: 0.95rem;
+}
+
+.timer-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+.timer-label {
+  font-family: "Tajawal", sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.timer-pill.warn {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.timer-pill.danger {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+  animation: timerPulse 1s ease-in-out infinite;
+}
+
+.timer-pill.paused {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #475569;
+  animation: none;
+}
+
+@keyframes timerPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.quiz-progress {
+  height: 10px;
+  margin: 12px 4px;
+  border-radius: 999px;
+  background: #ece7fb;
+  overflow: hidden;
+}
+
+.quiz-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.paused-banner {
+  margin-bottom: 10px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  border: 2px solid #fde68a;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ===== بطاقة السؤال ===== */
+.quiz-card {
+  position: relative;
+  margin-top: 4px;
+  padding: 24px 26px 22px;
+  overflow: hidden;
+}
+
+.quiz-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 8px;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+}
+
+.question-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 2px 0 12px;
+}
+
+.question-number {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.listen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--violet-line);
+  background: #faf5ff;
+  color: #6d28d9;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.listen-btn:hover:not(:disabled) {
+  background: #f3e8ff;
+  transform: translateY(-1px);
+}
+
+.listen-btn.speaking {
+  background: #6d28d9;
+  border-color: #6d28d9;
+  color: #fff;
+}
+
+.listen-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.question-text {
+  margin: 4px 0 18px;
+  font-family: "Baloo Bhaijaan 2", "Tajawal", sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.65;
+  color: #312e81;
+}
+
+/* ===== الخيارات ===== */
+.options {
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 2px solid var(--line);
+  background: #fbfaff;
+  color: #312e5f;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+.option:hover:not(:disabled) {
+  background: #f5f3ff;
+  border-color: #c4b5fd;
+  transform: translateY(-1px);
+}
+
+.option:disabled {
+  cursor: default;
+}
+
+.opt-letter {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--violet-soft);
+  color: #6d28d9;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.opt-text {
+  flex: 1;
+  line-height: 1.7;
+}
+
+.opt-mark {
+  width: 24px;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.option[data-state="correct"] {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.option[data-state="correct"] .opt-letter {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.option[data-state="correct"] .opt-mark {
+  opacity: 1;
+  color: #16a34a;
+}
+
+.option[data-state="wrong"] {
+  background: #fff1f2;
+  border-color: #fda4af;
+  color: #9f1239;
+}
+
+.option[data-state="wrong"] .opt-letter {
+  background: #fecdd3;
+  color: #9f1239;
+}
+
+.option[data-state="wrong"] .opt-mark {
+  opacity: 1;
+  color: #e11d48;
+}
+
+.option[data-state="muted"] {
+  opacity: 0.55;
+}
+
+.keyboard-hint {
+  margin-top: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #8b86a8;
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-inline: 1px;
+  border-radius: 6px;
+  border: 1.5px solid #e2ddf8;
+  border-bottom-width: 2px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #6d28d9;
+}
+
+/* ===== التغذية الراجعة ===== */
+.feedback-area {
+  margin-top: 14px;
+}
+
+.feedback {
+  padding: 14px 16px;
+  border-radius: 18px;
+  animation: feedbackIn 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes feedbackIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.feedback.good {
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+}
+
+.feedback.bad {
+  background: #fff8f0;
+  border: 2px solid #fed7aa;
+}
+
+.fb-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.feedback.good .fb-head {
+  color: #166534;
+}
+
+.feedback.bad .fb-head {
+  color: #9a3412;
+}
+
+.fb-icon {
+  font-size: 1.15rem;
+}
+
+.fb-text {
+  margin-top: 3px;
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.9;
+  color: #14532d;
+}
+
+.combo {
+  margin-inline-start: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+/* ===== شخصية إيهاب ===== */
+.coach {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+  animation: coachIn 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes coachIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.coach-avatar {
+  flex: 0 0 76px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #5eead4;
+  box-shadow: 0 10px 20px -10px rgba(13, 148, 136, 0.65);
+  overflow: hidden;
+  animation: coachBob 3.2s ease-in-out infinite;
+}
+
+@keyframes coachBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+}
+
+.ehab-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.coach-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.coach-name {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #99f6e4;
+  background: var(--teal-soft);
+  color: #0f766e;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.coach-text {
+  position: relative;
+  padding: 11px 14px;
+  border-radius: 18px;
+  border: 2px solid #bae6fd;
+  border-top-right-radius: 6px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.9;
+  box-shadow: 0 12px 22px -16px rgba(15, 118, 110, 0.7);
+}
+
+.coach-text::before,
+.coach-text::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.coach-text::before {
+  top: 9px;
+  right: -14px;
+  border-width: 9px 0 9px 14px;
+  border-right-color: #bae6fd;
+}
+
+.coach-text::after {
+  top: 11px;
+  right: -9px;
+  border-width: 7px 0 7px 11px;
+  border-right-color: #fff;
+}
+
+.coach-listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  padding: 6px 15px;
+  border-radius: 999px;
+  border: 2px solid #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 0.84rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.coach-listen:hover:not(:disabled) {
+  background: var(--teal-soft);
+  transform: translateY(-1px);
+}
+
+.coach-listen.speaking {
+  background: #0d9488;
+  border-color: #0d9488;
+  color: #fff;
+}
+
+.coach-listen:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.quiz-actions {
+  margin-top: 16px;
+}
+
+.next-btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 1.02rem;
+  animation: feedbackIn 0.3s ease both;
+}
+
+/* ===== القصاصات ===== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  border-radius: 3px;
+  animation: confettiPop 1.05s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.confetti-piece.round {
+  border-radius: 50%;
+}
+
+@keyframes confettiPop {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* ===== التوست ===== */
+.toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  z-index: 220;
+  max-width: 90vw;
+  padding: 11px 18px;
+  border-radius: 14px;
+  background: #312e5f;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translate(-50%, 120px);
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== النوافذ المنبثقة ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 230;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(35, 27, 77, 0.45);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  width: min(440px, 100%);
+  padding: 24px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 30px 60px -25px rgba(35, 27, 77, 0.6);
+  animation: modalIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modal h2 {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.22rem;
+  color: #4c1d95;
+  margin-bottom: 8px;
+}
+
+.modal-body p {
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.85;
+  color: #5b5578;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.modal-actions .btn {
+  flex: 1 1 160px;
+}
+
+/* =========================================================
+   شاشة النتيجة
+   ========================================================= */
+.result-screen {
+  max-width: 760px;
+}
+
+.result-level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: rgba(255, 255, 255, 0.85);
+  color: #5b21b6;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  box-shadow: var(--shadow-soft);
+}
+
+.result-level-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 1.05rem;
+}
+
+.result-card {
+  position: relative;
+  padding: 26px 26px 30px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.result-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fef3c7, transparent 70%);
+  top: -160px;
+  inset-inline-end: -80px;
+  pointer-events: none;
+}
+
+.result-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.result-emoji {
+  font-size: 3.4rem;
+  line-height: 1;
+  margin-bottom: 4px;
+  animation: bob 2.6s ease-in-out infinite;
+}
+
+.result-title {
+  margin-bottom: 14px;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.4;
+  color: #4c1d95;
+}
+
+.progress-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  margin: 0 auto 8px;
+}
+
+.ring-bg {
+  stroke: #ece7fb;
+}
+
+.ring-value {
+  stroke: #22c55e;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.progress-ring.fail .ring-value {
+  stroke: var(--amber);
+}
+
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-label strong {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  color: #312e81;
+}
+
+.ring-label span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.result-stars {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin: 4px 0 8px;
+}
+
+.result-star {
+  font-size: 1.9rem;
+  line-height: 1;
+  animation: starPop 0.5s ease both;
+}
+
+.result-star.off {
+  opacity: 0.25;
+  filter: grayscale(1);
+  animation: none;
+}
+
+.speed-badge {
+  display: inline-block;
+  margin: 2px auto 4px;
+  padding: 5px 16px;
+  border-radius: 999px;
+  border: 2px solid #fcd34d;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 4px 0 #fbbf24;
+  animation: starPop 0.55s ease both;
+}
+
+.speed-badge.record {
+  border-color: #99f6e4;
+  background: linear-gradient(135deg, #ccfbf1, #a7f3d0);
+  color: #115e59;
+  box-shadow: 0 4px 0 #5eead4;
+}
+
+.result-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.stat-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 2px solid var(--violet-soft);
+  background: #f5f3ff;
+  color: #5b21b6;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.stat-chip.danger {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.motivation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 2px dashed #d8b4fe;
+  background: linear-gradient(135deg, #fdf4ff, #eef2ff);
+  text-align: right;
+}
+
+.motivation-avatar {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.motivation p {
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.7;
+  color: #6b21a8;
+}
+
+.result-message {
+  margin-bottom: 18px;
+  font-size: 0.93rem;
+  font-weight: 700;
+  line-height: 1.85;
+  color: #5b5578;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.result-actions .btn {
+  flex: 1 1 160px;
+}
+
+/* ===== مراجعة الأخطاء ===== */
+.review-card {
+  margin-top: 16px;
+  padding: 6px 18px 10px;
+  text-align: right;
+}
+
+.review-card summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  font-family: "Baloo Bhaijaan 2", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #4c1d95;
+  cursor: pointer;
+  list-style: none;
+}
+
+.review-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.review-card details[open] summary {
+  border-bottom: 2px solid #f1edff;
+  margin-bottom: 12px;
+}
+
+.review-count {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.review-count.clean {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.review-list {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.review-item {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 2px solid #f1edff;
+  background: #fbfaff;
+}
+
+.review-question {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.7;
+  color: #312e5f;
+}
+
+.review-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-wrong,
+.review-correct {
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.review-wrong {
+  background: #fff1f2;
+  border: 1.5px solid #fecdd3;
+  color: #9f1239;
+}
+
+.review-correct {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  color: #166534;
+}
+
+.review-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.review-bulb {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.review-explanation p {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.8;
+  color: #5b5578;
+}
+
+.perfect-note {
+  margin: 4px 0 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px dashed #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.8;
+}
+
+.result-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+/* =========================================================
+   التجاوب
+   ========================================================= */
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+
+  .hero-mascot {
+    flex-direction: row-reverse;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-avatar {
+    width: 110px;
+    height: 110px;
+  }
+
+  .hero-bubble {
+    text-align: right;
+  }
+
+  .hero-bubble::after {
+    display: none;
+  }
+
+  .quiz-topbar {
+    flex-wrap: wrap;
+  }
+
+  .quiz-level {
+    flex: 1 1 220px;
+  }
+
+  .quiz-tools {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .resume-card {
+    flex-wrap: wrap;
+  }
+
+  .resume-actions {
+    width: 100%;
+  }
+
+  .resume-actions .btn {
+    flex: 1;
+  }
+
+  .result-card {
+    padding: 22px 18px 26px;
+  }
+}
+
+@media (max-width: 560px) {
+  .screen {
+    padding: 10px 10px 34px;
+  }
+
+  .topbar {
+    top: 8px;
+    padding: 8px 10px;
+    border-radius: 18px;
+  }
+
+  .brand-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+  }
+
+  .brand-text h1 {
+    font-size: 1rem;
+  }
+
+  .brand-text p {
+    display: none;
+  }
+
+  .chip {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 1rem;
+  }
+
+  .hero {
+    padding: 18px 14px;
+    gap: 12px;
+    border-radius: 22px;
+  }
+
+  .hero-text h2 {
+    font-size: 1.42rem;
+  }
+
+  .hero-text > p {
+    font-size: 0.86rem;
+  }
+
+  .hero-stats {
+    gap: 6px;
+  }
+
+  .stat {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 10px;
+  }
+
+  .stat b {
+    font-size: 1.05rem;
+  }
+
+  .stat span {
+    font-size: 0.66rem;
+  }
+
+  .hero-avatar {
+    width: 92px;
+    height: 92px;
+  }
+
+  .hero-bubble {
+    max-width: 200px;
+    padding: 8px 11px;
+  }
+
+  .hero-bubble strong {
+    font-size: 0.82rem;
+  }
+
+  .hero-bubble span {
+    font-size: 0.72rem;
+  }
+
+  .levels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .level-desc {
+    min-height: 0;
+  }
+
+  .section-head {
+    margin-bottom: 10px;
+  }
+
+  .quiz-topbar {
+    top: 8px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .quiz-level-text strong {
+    font-size: 0.86rem;
+  }
+
+  .quiz-level-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+
+  .question-chip {
+    font-size: 0.74rem;
+    padding: 6px 10px;
+  }
+
+  .timer-pill {
+    font-size: 0.84rem;
+    padding: 6px 10px;
+  }
+
+  .timer-label {
+    display: none;
+  }
+
+  .quiz-card {
+    padding: 18px 14px 16px;
+    border-radius: 22px;
+  }
+
+  .question-text {
+    font-size: 1.18rem;
+    line-height: 1.7;
+  }
+
+  .option {
+    padding: 10px 11px;
+    font-size: 0.94rem;
+    border-radius: 15px;
+    gap: 10px;
+  }
+
+  .opt-letter {
+    width: 34px;
+    height: 34px;
+    font-size: 0.92rem;
+  }
+
+  .keyboard-hint {
+    display: none;
+  }
+
+  .feedback {
+    padding: 12px;
+  }
+
+  .coach {
+    gap: 9px;
+  }
+
+  .coach-avatar {
+    flex-basis: 60px;
+    width: 60px;
+    height: 60px;
+    border-width: 2px;
+  }
+
+  .coach-text {
+    padding: 9px 11px;
+    font-size: 0.86rem;
+    border-radius: 15px;
+    border-top-right-radius: 5px;
+  }
+
+  .coach-text::before {
+    top: 8px;
+    right: -12px;
+    border-width: 8px 0 8px 12px;
+  }
+
+  .coach-text::after {
+    top: 10px;
+    right: -8px;
+    border-width: 6px 0 6px 9px;
+  }
+
+  .coach-name {
+    font-size: 0.74rem;
+  }
+
+  .coach-listen {
+    font-size: 0.78rem;
+    padding: 5px 12px;
+  }
+
+  .result-title {
+    font-size: 1.28rem;
+  }
+
+  .result-card {
+    padding: 20px 14px 24px;
+  }
+
+  .result-emoji {
+    font-size: 2.9rem;
+  }
+
+  .ring-label strong {
+    font-size: 1.45rem;
+  }
+
+  .result-star {
+    font-size: 1.6rem;
+  }
+
+  .motivation {
+    padding: 9px 11px;
+  }
+
+  .motivation p {
+    font-size: 0.86rem;
+  }
+
+  .result-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .review-card {
+    padding: 4px 14px 8px;
+  }
+
+  .review-answers {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal {
+    padding: 20px;
+  }
+
+  .modal-actions .btn {
+    flex: 1 1 100%;
+  }
+
+  .footer {
+    font-size: 0.72rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
