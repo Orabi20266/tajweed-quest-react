@@ -180,7 +180,10 @@ export default function App() {
 
     let emoji = "🌱";
     let title = "لا بأس، حاول مرة أخرى!";
-    if (timedOut) {
+    if (timedOut && passed) {
+      emoji = "🎉";
+      title = "انتهى الوقت، لكنك اجتزت المرحلة!";
+    } else if (timedOut) {
       emoji = "⌛";
       title = "انتهى الوقت!";
     } else if (passed && percent === 100) {
@@ -227,7 +230,7 @@ export default function App() {
       emoji,
       title,
       message,
-      motivation: getMotivation({ percent, isFast, isRecord, timedOut }),
+      motivation: getMotivation({ percent, isFast, isRecord, timedOut, passed }),
       answers: attempt.answers
     });
 

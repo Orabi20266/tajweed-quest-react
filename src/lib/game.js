@@ -181,7 +181,10 @@ export function writeStore(key, value) {
 }
 
 /* عبارات التحفيز حسب النتيجة والسرعة */
-export function getMotivation({ percent, isFast, isRecord, timedOut }) {
+export function getMotivation({ percent, isFast, isRecord, timedOut, passed }) {
+  if (timedOut && passed) {
+    return "انتهى الوقت، لكنك حققت نسبة الاجتياز! أحسنتَ يا طالب القرآن وواصل على هذا النهج ⏳";
+  }
   if (timedOut) {
     return "انتهى الوقت يا بطل! لا تحزن، راجع الشرح وأعد المحاولة، فالمتأني يبلغ المراد ⏳";
   }
