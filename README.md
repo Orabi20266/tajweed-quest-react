@@ -26,6 +26,7 @@ npm install
 npm run dev      # خادم التطوير على http://127.0.0.1:5173
 npm run build    # نسخة الإنتاج في مجلد dist
 npm run preview  # معاينة نسخة الإنتاج
+npm run deploy   # بناء ونشر على Cloudflare Workers
 ```
 
 ## البنية
@@ -52,4 +53,16 @@ src/
 
 ## النشر
 
-المشروع ينتج موقعاً ثابتاً في `dist/`، ويمكن نشره على Cloudflare Pages/Workers أو GitHub Pages أو أي استضافة ثابتة.
+المشروع ينتج موقعاً ثابتاً في `dist/`، ويعمل على:
+
+- **Cloudflare Workers:** https://tajweed-quest.bnanbrand.workers.dev
+- **GitHub Pages:** https://orabi20266.github.io/tajweed-quest-react/
+- **المستودع:** https://github.com/Orabi20266/tajweed-quest-react
+
+للنشر على Cloudflare من هذا المجلد:
+
+```bash
+npm run deploy
+```
+
+أما GitHub Pages فيُنشر تلقائياً عبر GitHub Actions عند كل دفعة إلى فرع `main`.
