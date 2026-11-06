@@ -11,9 +11,10 @@ export const GEMINI_TTS_MODEL = "gemini-3.1-flash-tts-preview";
 
 /* نماذج تفهم الصوت وتقيّم التلاوة، بالترتيب من الأسرع إلى الأقوى */
 const EVALUATION_MODELS = [
-  "gemini-3.5-flash-lite",
   "gemini-3-flash-preview",
-  "gemini-3.6-flash"
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3-pro-preview"
 ];
 
 export const GEMINI_VOICES = [
