@@ -3638,6 +3638,26 @@ kbd {
   font-weight: 700;
 }
 
+.gemini-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.gemini-preview-btn {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+}
+
+.gemini-preview-hint {
+  color: #7b7497;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
 .gemini-links {
   display: grid;
   gap: 5px;

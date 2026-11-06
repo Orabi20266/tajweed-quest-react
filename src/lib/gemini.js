@@ -5,6 +5,7 @@
 const API_ROOT = "https://generativelanguage.googleapis.com/v1beta";
 const KEY_STORAGE = "tajweed_gemini_key_v1";
 const VOICE_STORAGE = "tajweed_gemini_voice_v1";
+const CORRECTION_VOICE_STORAGE = "tajweed_gemini_correction_voice_v1";
 const CHANGE_EVENT = "tajweed:gemini-change";
 
 export const GEMINI_TTS_MODEL = "gemini-3.1-flash-tts-preview";
@@ -17,14 +18,41 @@ const EVALUATION_MODELS = [
   "gemini-3-pro-preview"
 ];
 
+/* أصوات Google AI Studio المتاحة في gemini-3.1-flash-tts-preview */
 export const GEMINI_VOICES = [
-  { id: "Puck", label: "Puck — حيوي وودود" },
+  { id: "Charon", label: "Charon — معلّم، معلوماتي وهادئ" },
+  { id: "Achird", label: "Achird — ودود وقريب" },
+  { id: "Sulafat", label: "Sulafat — دافئ وحنون" },
+  { id: "Sadaltager", label: "Sadaltager — واسع المعرفة" },
+  { id: "Iapetus", label: "Iapetus — واضح ونقي" },
+  { id: "Orus", label: "Orus — ثابت وواثق" },
+  { id: "Alnilam", label: "Alnilam — ثابت ومتوازن" },
   { id: "Kore", label: "Kore — واضح وثابت" },
+  { id: "Puck", label: "Puck — حيوي ومرح" },
   { id: "Zephyr", label: "Zephyr — مشرق" },
   { id: "Fenrir", label: "Fenrir — متحمس" },
-  { id: "Aoede", label: "Aoede — هادئ" },
-  { id: "Leda", label: "Leda — صوت شاب" }
+  { id: "Aoede", label: "Aoede — خفيف وهادئ" },
+  { id: "Leda", label: "Leda — صوت شاب" },
+  { id: "Callirrhoe", label: "Callirrhoe — هادئ وسلس" },
+  { id: "Autonoe", label: "Autonoe — مشرق" },
+  { id: "Enceladus", label: "Enceladus — نَفَسي" },
+  { id: "Umbriel", label: "Umbriel — هادئ ومرتاح" },
+  { id: "Algieba", label: "Algieba — ناعم" },
+  { id: "Despina", label: "Despina — ناعم" },
+  { id: "Erinome", label: "Erinome — واضح" },
+  { id: "Algenib", label: "Algenib — عميق" },
+  { id: "Rasalgethi", label: "Rasalgethi — معلوماتي" },
+  { id: "Achernar", label: "Achernar — رقيق" },
+  { id: "Schedar", label: "Schedar — متوازن" },
+  { id: "Gacrux", label: "Gacrux — ناضج" },
+  { id: "Pulcherrima", label: "Pulcherrima — حيوي" },
+  { id: "Zubenelgenubi", label: "Zubenelgenubi — عفوي" },
+  { id: "Vindemiatrix", label: "Vindemiatrix — لطيف" },
+  { id: "Sadachbia", label: "Sadachbia — نشيط" }
 ];
+
+/* الصوت الافتراضي لشرح الأخطاء والتصحيح، بصوت معلّم */
+export const DEFAULT_CORRECTION_VOICE = "Charon";
 
 /* ---------- إعدادات محفوظة على جهاز المستخدم ---------- */
 
@@ -71,6 +99,19 @@ export function getGeminiVoice() {
 
 export function setGeminiVoice(value) {
   writeStorage(VOICE_STORAGE, String(value ?? "").trim());
+  notifyChange();
+}
+
+export function getCorrectionVoice() {
+  if (typeof window === "undefined") return DEFAULT_CORRECTION_VOICE;
+  const saved = readStorage(CORRECTION_VOICE_STORAGE).trim();
+  return GEMINI_VOICES.some((voice) => voice.id === saved)
+    ? saved
+    : DEFAULT_CORRECTION_VOICE;
+}
+
+export function setCorrectionVoice(value) {
+  writeStorage(CORRECTION_VOICE_STORAGE, String(value ?? "").trim());
   notifyChange();
 }
 

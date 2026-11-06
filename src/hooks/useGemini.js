@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
-import { getGeminiKey, getGeminiVoice, subscribeGemini } from "../lib/gemini.js";
+import {
+  getCorrectionVoice,
+  getGeminiKey,
+  getGeminiVoice,
+  subscribeGemini
+} from "../lib/gemini.js";
 
-/* حالة مفتاح Gemini والصوت المختار، تتحدث فوراً عند تغييرهما */
+/* حالة مفتاح Gemini والأصوات المختارة، تتحدث فوراً عند تغييرها */
 export function useGeminiSettings() {
   const [state, setState] = useState(() => ({
     hasKey: Boolean(getGeminiKey()),
-    voice: getGeminiVoice()
+    voice: getGeminiVoice(),
+    correctionVoice: getCorrectionVoice()
   }));
 
   useEffect(
@@ -13,7 +19,8 @@ export function useGeminiSettings() {
       subscribeGemini(() => {
         setState({
           hasKey: Boolean(getGeminiKey()),
-          voice: getGeminiVoice()
+          voice: getGeminiVoice(),
+          correctionVoice: getCorrectionVoice()
         });
       }),
     []

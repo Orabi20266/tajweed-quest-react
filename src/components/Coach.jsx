@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import EhabAvatar from "./EhabAvatar.jsx";
 import { COACH_NAME } from "../lib/game.js";
+import { useGeminiSettings } from "../hooks/useGemini.js";
 
-/* فقاعة شرح إيهاب عند الإجابة الخاطئة */
+/* فقاعة شرح إيهاب عند الإجابة الخاطئة، بصوت تصحيح مخصص */
 export default function Coach({ text, speech }) {
   const { speak, cancel, supported } = speech;
+  const { hasKey, correctionVoice } = useGeminiSettings();
   const [speaking, setSpeaking] = useState(false);
   const tokenRef = useRef(0);
 
@@ -30,6 +32,8 @@ export default function Coach({ text, speech }) {
     setSpeaking(true);
     const started = speak(`قال ${COACH_NAME}: ${text}`, {
       rate: 0.82,
+      voice: hasKey ? correctionVoice : undefined,
+      style: "بصوت معلّم ودود يشرح ببساطة وبطء",
       onEnd: () => {
         if (token === tokenRef.current) setSpeaking(false);
       }
