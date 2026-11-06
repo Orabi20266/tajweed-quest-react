@@ -88,7 +88,9 @@ export default function HomeScreen({
   onDiscardSession,
   onOpenRecitation,
   onToggleSound,
-  onReset
+  onReset,
+  hasGemini = false,
+  onOpenGemini
 }) {
   const session = progress.session;
   const sessionLevel = session ? levels[session.levelIndex] : null;
@@ -123,6 +125,18 @@ export default function HomeScreen({
             <b>{totalStars}</b>
             <span className="chip-total">/ {levels.length * 3}</span>
           </span>
+          <button
+            type="button"
+            className={`chip gemini-chip ${hasGemini ? "on" : ""}`}
+            onClick={onOpenGemini}
+            aria-label="إعداد أصوات Gemini"
+            title="إعداد أصوات Gemini والتصحيح الذكي"
+          >
+            <span aria-hidden="true">✨</span>
+            <span className="gemini-label">
+              {hasGemini ? "Gemini مفعّل" : "Gemini"}
+            </span>
+          </button>
           <button
             type="button"
             className="icon-btn"
@@ -251,6 +265,9 @@ export default function HomeScreen({
                 </span>
               )}
               <span className="recite-badge">لا تؤثر على تقدم المراحل</span>
+              {hasGemini && (
+                <span className="recite-badge">✨ Gemini مفعّل</span>
+              )}
             </div>
           </div>
 

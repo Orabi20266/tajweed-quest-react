@@ -1,12 +1,32 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  getGeminiKey,
+  getGeminiVoice,
+  subscribeGemini,
+  synthesizeSpeech
+} from "../lib/gemini.js";
 
-/* نطق عربي باستخدام محرّك النطق المدمج في المتصفح */
+/* نطق عربي عبر Gemini TTS عند توفر المفتاح، أو محرّك النطق المدمج كاحتياط */
 export function useSpeech() {
-  const supported = typeof window !== "undefined" && "speechSynthesis" in window;
+  const nativeSupported =
+    typeof window !== "undefined" && "speechSynthesis" in window;
+  const [geminiReady, setGeminiReady] = useState(() => Boolean(getGeminiKey()));
+  const supported = nativeSupported || geminiReady;
+
   const voicesRef = useRef([]);
+  const audioRef = useRef(null);
+  const tokenRef = useRef(0);
+
+  useEffect(
+    () =>
+      subscribeGemini(() => {
+        setGeminiReady(Boolean(getGeminiKey()));
+      }),
+    []
+  );
 
   useEffect(() => {
-    if (!supported) return undefined;
+    if (!nativeSupported) return undefined;
     const synth = window.speechSynthesis;
     const loadVoices = () => {
       voicesRef.current = synth.getVoices();
@@ -14,23 +34,41 @@ export function useSpeech() {
     loadVoices();
     synth.addEventListener?.("voiceschanged", loadVoices);
     return () => synth.removeEventListener?.("voiceschanged", loadVoices);
-  }, [supported]);
+  }, [nativeSupported]);
+
+  const stopAudio = useCallback(() => {
+    const audio = audioRef.current;
+    audioRef.current = null;
+    if (audio) {
+      try {
+        audio.onended = null;
+        audio.onerror = null;
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        /* تجاهل */
+      }
+    }
+  }, []);
 
   const cancel = useCallback(() => {
-    if (!supported) return;
+    tokenRef.current += 1;
+    stopAudio();
+    if (!nativeSupported) return;
     try {
       window.speechSynthesis.cancel();
     } catch {
       /* تجاهل */
     }
-  }, [supported]);
+  }, [nativeSupported, stopAudio]);
 
-  const speak = useCallback(
+  const nativeSpeak = useCallback(
     (text, { rate = 0.9, pitch = 1, onEnd } = {}) => {
-      if (!supported) {
+      if (!nativeSupported) {
         onEnd?.();
         return false;
       }
+
       try {
         window.speechSynthesis.cancel();
 
@@ -60,8 +98,65 @@ export function useSpeech() {
         return false;
       }
     },
-    [supported]
+    [nativeSupported]
   );
+
+  const speak = useCallback(
+    (text, { rate = 0.9, pitch = 1, voice, style, onEnd } = {}) => {
+      const content = String(text ?? "").trim();
+      if (!content) {
+        onEnd?.();
+        return false;
+      }
+
+      cancel();
+      const token = tokenRef.current;
+
+      const finish = () => {
+        if (token === tokenRef.current) onEnd?.();
+      };
+
+      if (getGeminiKey()) {
+        synthesizeSpeech(content, {
+          voice: voice || getGeminiVoice(),
+          rate,
+          style
+        })
+          .then((url) => {
+            if (token !== tokenRef.current) return;
+
+            const audio = new Audio(url);
+            audioRef.current = audio;
+
+            const fallback = () => {
+              if (audioRef.current === audio) audioRef.current = null;
+              nativeSpeak(content, { rate, pitch, onEnd: finish });
+            };
+
+            audio.onended = () => {
+              if (audioRef.current === audio) audioRef.current = null;
+              finish();
+            };
+            audio.onerror = fallback;
+
+            const playing = audio.play();
+            if (playing?.catch) playing.catch(fallback);
+          })
+          .catch(() => {
+            if (token === tokenRef.current) {
+              nativeSpeak(content, { rate, pitch, onEnd: finish });
+            }
+          });
+
+        return true;
+      }
+
+      return nativeSpeak(content, { rate, pitch, onEnd: finish });
+    },
+    [cancel, nativeSpeak]
+  );
+
+  useEffect(() => () => cancel(), [cancel]);
 
   return { supported, speak, cancel };
 }

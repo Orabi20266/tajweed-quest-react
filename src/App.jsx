@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { levelsData } from "./data/levels.js";
 import { recitationsData } from "./data/recitations.js";
 import { useProgress } from "./hooks/useProgress.js";
+import { useGeminiSettings } from "./hooks/useGemini.js";
 import { useSound } from "./hooks/useSound.js";
 import { useSpeech } from "./hooks/useSpeech.js";
 import {
@@ -16,6 +17,7 @@ import {
 } from "./lib/game.js";
 import Toast from "./components/Toast.jsx";
 import Modal from "./components/Modal.jsx";
+import GeminiSettings from "./components/GeminiSettings.jsx";
 import HomeScreen from "./screens/HomeScreen.jsx";
 import QuizScreen from "./screens/QuizScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
@@ -35,6 +37,7 @@ export default function App() {
 
   const sound = useSound(progress.sound);
   const speech = useSpeech();
+  const gemini = useGeminiSettings();
 
   const [screen, setScreen] = useState("home"); // home | quiz | result | recite
   const [reciteIndex, setReciteIndex] = useState(null);
@@ -43,6 +46,7 @@ export default function App() {
   const [paused, setPaused] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [geminiOpen, setGeminiOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
   const warnedRef = useRef(false);
@@ -454,6 +458,8 @@ export default function App() {
           onOpenRecitation={openRecitation}
           onToggleSound={toggleSound}
           onReset={() => setResetOpen(true)}
+          hasGemini={gemini.hasKey}
+          onOpenGemini={() => setGeminiOpen(true)}
         />
       )}
 
@@ -467,6 +473,8 @@ export default function App() {
           onRecord={recordRecitation}
           speech={speech}
           sound={sound}
+          hasGemini={gemini.hasKey}
+          onOpenGemini={() => setGeminiOpen(true)}
         />
       )}
 
@@ -495,6 +503,19 @@ export default function App() {
           onHome={goHome}
         />
       )}
+
+      <GeminiSettings
+        open={geminiOpen}
+        onClose={() => setGeminiOpen(false)}
+        voice={gemini.voice}
+        onSaved={(enabled) =>
+          showToast(
+            enabled
+              ? "✨ تم تفعيل أصوات Gemini والتصحيح الذكي"
+              : "تم حذف مفتاح Gemini، والعودة إلى الصوت المدمج"
+          )
+        }
+      />
 
       <Toast toast={toast} onDone={hideToast} />
 

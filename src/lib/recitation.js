@@ -168,6 +168,50 @@ export function alignRecitation(expectedText, spokenText) {
   };
 }
 
+/**
+ * يبني نتيجة التلاوة من حكم Gemini على كل كلمة.
+ * إن جاء عدد الأحكام مختلفاً عن عدد الكلمات نعود للمطابقة المحلية.
+ */
+export function buildResultFromVerdicts(expectedText, verdicts, transcript) {
+  const expectedWords = splitWords(expectedText);
+  const cleanTranscript = String(transcript ?? "").trim();
+
+  if (!Array.isArray(verdicts) || verdicts.length !== expectedWords.length) {
+    return alignRecitation(expectedText, cleanTranscript);
+  }
+
+  const allowed = new Set(["correct", "close", "missing"]);
+  const words = expectedWords.map((word, index) => {
+    const verdict = verdicts[index] ?? {};
+    const status = allowed.has(verdict.status) ? verdict.status : "missing";
+    return {
+      word,
+      heard: String(verdict.heard ?? "").trim(),
+      status,
+      similarity: status === "correct" ? 1 : status === "close" ? 0.75 : 0
+    };
+  });
+
+  const exactCount = words.filter((item) => item.status === "correct").length;
+  const closeCount = words.filter((item) => item.status === "close").length;
+  const missingCount = words.filter((item) => item.status === "missing").length;
+  const total = words.length;
+  const accuracy =
+    total > 0 ? Math.round(((exactCount + closeCount * 0.5) / total) * 100) : 0;
+
+  return {
+    words,
+    accuracy,
+    exactCount,
+    closeCount,
+    missingCount,
+    total,
+    expectedWords,
+    heardWords: cleanTranscript ? splitWords(cleanTranscript) : [],
+    transcript: cleanTranscript
+  };
+}
+
 export function starsForRecitation(percent) {
   if (percent >= 95) return 3;
   if (percent >= RECITATION_MASTERED) return 2;

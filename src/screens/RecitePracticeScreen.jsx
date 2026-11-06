@@ -3,10 +3,12 @@ import Coach from "../components/Coach.jsx";
 import Confetti from "../components/Confetti.jsx";
 import ProgressRing from "../components/ProgressRing.jsx";
 import { useRecitation } from "../hooks/useRecitation.js";
+import { evaluateRecitation, getGeminiKey } from "../lib/gemini.js";
 import {
   RECITATION_MASTERED,
   alignRecitation,
   buildCorrectionText,
+  buildResultFromVerdicts,
   getRecitationFeedback,
   splitWords,
   starsForRecitation
@@ -20,6 +22,10 @@ const ERROR_MESSAGES = {
   "service-not-allowed":
     "خدمة التعرف على الكلام غير متاحة. تأكد من السماح للميكروفون، ثم أعد المحاولة.",
   "no-mic": "لم أجد ميكروفوناً متصلاً. وصّل ميكروفوناً ثم أعد المحاولة.",
+  "busy-mic":
+    "الميكروفون مستخدم من تطبيق آخر. أغلق التطبيقات التي تستخدمه ثم أعد المحاولة.",
+  "mic-timeout":
+    "لم يصل ردّ إذن الميكروفون. اضغط على أيقونة القفل بجوار العنوان، واسمح بالوصول إلى الميكروفون، ثم أعد المحاولة.",
   "no-speech":
     "لم أسمع صوتك. تأكد من الميكروفون، واقترب منه، واقرأ الآية بصوت واضح.",
   network:
@@ -60,7 +66,9 @@ export default function RecitePracticeScreen({
   onBack,
   onRecord,
   speech,
-  sound
+  sound,
+  hasGemini = false,
+  onOpenGemini
 }) {
   const recitation = useRecitation();
   const { speak, cancel: cancelSpeech, supported: speechSupported } = speech;
@@ -72,6 +80,9 @@ export default function RecitePracticeScreen({
   const [playingWord, setPlayingWord] = useState(null);
   const [confetti, setConfetti] = useState(0);
   const [noSpeech, setNoSpeech] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiNote, setAiNote] = useState("");
+  const [audioUrl, setAudioUrl] = useState(null);
 
   const audioRef = useRef(null);
   const referenceToken = useRef(0);
@@ -89,8 +100,22 @@ export default function RecitePracticeScreen({
   const errorText = recitation.error
     ? ERROR_MESSAGES[recitation.error] ?? ERROR_MESSAGES.unknown
     : "";
+  const showingNoSpeech = noSpeech && !recitation.error;
   const verifying =
-    phase === "listening" && recitation.hasStarted && !recitation.listening;
+    phase === "listening" &&
+    !recitation.starting &&
+    recitation.hasStarted &&
+    !recitation.listening;
+
+  useEffect(() => {
+    if (!recitation.audioBlob) {
+      setAudioUrl(null);
+      return undefined;
+    }
+    const url = URL.createObjectURL(recitation.audioBlob);
+    setAudioUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [recitation.audioBlob]);
 
   /* ---------- التلاوة المرجعية ---------- */
 
@@ -194,73 +219,108 @@ export default function RecitePracticeScreen({
 
   /* ---------- الاستماع والتحقق ---------- */
 
-  const finalize = useCallback(() => {
+  const finalize = useCallback(async () => {
     if (checkedRef.current) return;
     checkedRef.current = true;
-
-    const analysis = alignRecitation(ayah.text, recitation.getTranscript());
     setPlayingWord(null);
+    setAnalyzing(true);
+    setAiNote("");
 
-    if (!analysis.transcript) {
-      setNoSpeech(true);
-      setPhase("idle");
-      sound.warning();
-      return;
+    try {
+      const blob = await recitation.getAudio();
+      const fallbackTranscript = recitation.getTranscript();
+      let analysis = null;
+      let source = "browser";
+
+      if (blob && getGeminiKey()) {
+        try {
+          const evaluation = await evaluateRecitation({
+            audio: blob,
+            ayahText: ayah.text,
+            words
+          });
+          const spoken = evaluation?.transcript || fallbackTranscript;
+
+          if (evaluation?.verdicts) {
+            analysis = buildResultFromVerdicts(
+              ayah.text,
+              evaluation.verdicts,
+              spoken
+            );
+          } else if (spoken) {
+            analysis = alignRecitation(ayah.text, spoken);
+          }
+
+          if (analysis) source = "gemini";
+          if (evaluation?.note) setAiNote(evaluation.note);
+        } catch (error) {
+          const invalidKey = error?.status === 401 || error?.status === 403;
+          setAiNote(
+            invalidKey
+              ? "مفتاح Gemini غير صالح. افتح «أصوات Gemini» وأدخل مفتاحاً صحيحاً، ثم أعد المحاولة."
+              : "تعذّر استخدام Gemini الآن، فاستخدمت التعرف المدمج في المتصفح. أعد المحاولة بعد قليل للحصول على تدقيق أدق."
+          );
+        }
+      }
+
+      if (!analysis) {
+        analysis = alignRecitation(ayah.text, fallbackTranscript);
+      }
+      analysis.source = source;
+
+      if (!analysis.transcript) {
+        setNoSpeech(true);
+        setPhase("idle");
+        sound.warning();
+        return;
+      }
+
+      setResult(analysis);
+      setPhase("checked");
+
+      if (analysis.accuracy >= 95) {
+        sound.fanfare();
+        setConfetti((value) => value + 1);
+      } else if (analysis.accuracy >= RECITATION_MASTERED) {
+        sound.correct();
+        setConfetti((value) => value + 1);
+      } else {
+        sound.wrong();
+      }
+
+      if (analysis.accuracy > 0) {
+        onRecord({ id: ayah.id, percent: analysis.accuracy });
+      }
+    } finally {
+      setAnalyzing(false);
     }
-
-    setResult(analysis);
-    setPhase("checked");
-
-    if (analysis.accuracy >= 95) {
-      sound.fanfare();
-      setConfetti((value) => value + 1);
-    } else if (analysis.accuracy >= RECITATION_MASTERED) {
-      sound.correct();
-      setConfetti((value) => value + 1);
-    } else if (analysis.transcript) {
-      sound.wrong();
-    }
-
-    if (analysis.accuracy > 0) {
-      onRecord({ id: ayah.id, percent: analysis.accuracy });
-    }
-  }, [ayah.id, ayah.text, onRecord, recitation.getTranscript, sound]);
+  }, [
+    ayah.id,
+    ayah.text,
+    onRecord,
+    recitation.getAudio,
+    recitation.getTranscript,
+    sound,
+    words
+  ]);
 
   useEffect(() => {
     if (phase !== "listening") return undefined;
-    if (recitation.listening) return undefined;
+    if (recitation.starting || recitation.listening) return undefined;
 
     if (!recitation.hasStarted) {
       if (recitation.error) setPhase("idle");
       return undefined;
     }
 
-    const transcript = recitation.getTranscript();
-    const blockingError =
-      recitation.error &&
-      !["no-speech", "network"].includes(recitation.error);
-
-    if (blockingError) {
-      setPhase("idle");
-      return undefined;
-    }
-
-    if (
-      (recitation.error === "no-speech" || recitation.error === "network") &&
-      !transcript
-    ) {
-      setPhase("idle");
-      return undefined;
-    }
-
-    const timer = window.setTimeout(() => finalize(), 550);
+    const timer = window.setTimeout(() => finalize(), 500);
     return () => window.clearTimeout(timer);
   }, [
     phase,
+    recitation.starting,
     recitation.listening,
     recitation.hasStarted,
     recitation.error,
-    recitation.getTranscript,
     finalize
   ]);
 
@@ -272,16 +332,24 @@ export default function RecitePracticeScreen({
     setResult(null);
     setPlayingWord(null);
     setNoSpeech(false);
+    setAiNote("");
+    setAnalyzing(false);
     checkedRef.current = false;
     setPhase("listening");
     sound.click();
 
-    const started = recitation.start();
-    if (!started) setPhase("idle");
+    recitation
+      .start()
+      .then((started) => {
+        if (!started) setPhase("idle");
+      })
+      .catch(() => setPhase("idle"));
   };
 
   const stopListening = () => {
+    const wasStarting = recitation.starting;
     recitation.stop();
+    if (wasStarting) setPhase("idle");
     sound.click();
   };
 
@@ -291,6 +359,8 @@ export default function RecitePracticeScreen({
     setResult(null);
     setPlayingWord(null);
     setNoSpeech(false);
+    setAiNote("");
+    setAnalyzing(false);
     setConfetti(0);
     checkedRef.current = false;
     setPhase("idle");
@@ -356,6 +426,15 @@ export default function RecitePracticeScreen({
             <span aria-hidden="true">⭐</span>
             {bestShown > 0 ? `أفضل ${bestShown}%` : "تلاوة جديدة"}
           </span>
+          <button
+            type="button"
+            className={`chip gemini-chip ${hasGemini ? "on" : ""}`}
+            onClick={onOpenGemini}
+            title="إعداد أصوات Gemini والتصحيح الذكي"
+          >
+            <span aria-hidden="true">✨</span>
+            {hasGemini ? "Gemini مفعّل" : "أصوات Gemini"}
+          </button>
           <span className="chip recitation-chip">اختياري</span>
         </div>
       </header>
@@ -392,7 +471,8 @@ export default function RecitePracticeScreen({
         )}
 
         <p className="recite-instruction">
-          اضغط على أي كلمة لسماع نطقها، ثم اقرأ الآية كاملة بصوت واضح. سيتوقف
+          اضغط على أي كلمة لسماع نطقها، ثم اقرأ الآية كاملة بصوت واضح. سيسجّل
+          التطبيق صوتك، ويستخدم Gemini لتدقيق التلاوة عند تفعيله، ويتوقف
           الاستماع تلقائياً عند سكوتك.
         </p>
 
@@ -446,7 +526,21 @@ export default function RecitePracticeScreen({
         </div>
 
         <div className="recite-status-row" aria-live="polite">
-          {verifying && (
+          {phase === "listening" && recitation.starting && (
+            <span className="recite-verifying">
+              <span className="verifying-dot" aria-hidden="true" />
+              أجهّز الميكروفون… اسمح بالوصول عند ظهور الطلب
+            </span>
+          )}
+
+          {analyzing && (
+            <span className="recite-verifying">
+              <span className="verifying-dot" aria-hidden="true" />
+              🤖 أستمع إلى تسجيلك وأدقّق التلاوة…
+            </span>
+          )}
+
+          {verifying && !analyzing && (
             <span className="recite-verifying">
               <span className="verifying-dot" aria-hidden="true" />
               أتحقق من تلاوتك…
@@ -456,12 +550,17 @@ export default function RecitePracticeScreen({
           {phase === "listening" && recitation.listening && (
             <span className="recite-listening">
               <span className="listening-dot" aria-hidden="true" />
-              أسمعك الآن… اقرأ بتؤدة ووضوح
+              {recitation.recording
+                ? "🔴 أسجّل صوتك… اقرأ بتؤدة ووضوح"
+                : "أسمعك الآن… اقرأ بتؤدة ووضوح"}
             </span>
           )}
 
-          {phase === "idle" && recitation.supported && (
-            <span className="recite-ready">🎧 الميكروفون جاهز عندما تضغط «ابدأ التلاوة»</span>
+          {phase === "idle" && recitation.supported && !recitation.starting && (
+            <span className="recite-ready">
+              🎧 الميكروفون جاهز عندما تضغط «ابدأ التلاوة»
+              {hasGemini ? " · Gemini سيصحح من تسجيلك" : ""}
+            </span>
           )}
         </div>
 
@@ -469,21 +568,30 @@ export default function RecitePracticeScreen({
           <div className="recite-fallback">
             <strong>🎧 وضع التدريب بدون ميكروفون</strong>
             <p>
-              متصفحك لا يدعم الاستماع إلى الكلام. يمكنك الاستماع للآية، والضغط على
-              الكلمات لسماع نطقها، وترديدها بصوتك. للحصول على تصحيح تلقائي جرّب
-              متصفح Chrome أو Edge.
+              متصفحك لا يدعم التعرف على الكلام. يمكنك الاستماع للآية والضغط على
+              الكلمات لسماع نطقها، أو تفعيل Gemini ليقوم بالتصحيح من تسجيل صوتك
+              مباشرة.
             </p>
+            <button type="button" className="btn btn-soft" onClick={onOpenGemini}>
+              ✨ إعداد أصوات Gemini
+            </button>
           </div>
         )}
 
         {(recitation.error || noSpeech) && !result && (
           <div className="recite-error" role="alert">
             <span className="recite-error-icon" aria-hidden="true">
-              {noSpeech ? "🎙️" : "⚠️"}
+              {showingNoSpeech ? "🎙️" : "⚠️"}
             </span>
             <div>
-              <strong>{noSpeech ? "لم أسمع تلاوتك" : "تعذّر الاستماع"}</strong>
-              <p>{noSpeech ? EMPTY_SPEECH_MESSAGE : errorText}</p>
+              <strong>
+                {showingNoSpeech ? "لم أسمع تلاوتك" : "تعذّر الاستماع"}
+              </strong>
+              <p>
+                {showingNoSpeech
+                  ? EMPTY_SPEECH_MESSAGE
+                  : errorText || EMPTY_SPEECH_MESSAGE}
+              </p>
             </div>
             <button
               type="button"
@@ -502,11 +610,15 @@ export default function RecitePracticeScreen({
         <div className={`transcript-box ${phase === "listening" ? "live" : ""}`}>
           <div className="transcript-head">
             <span>📝 ما سمعه إيهاب</span>
-            {phase === "listening" && (
-              <span className="live-label">
-                <span className="live-dot" aria-hidden="true" />
-                مباشر
-              </span>
+            {result?.source === "gemini" ? (
+              <span className="ai-badge">🤖 Gemini</span>
+            ) : (
+              phase === "listening" && (
+                <span className="live-label">
+                  <span className="live-dot" aria-hidden="true" />
+                  مباشر
+                </span>
+              )
             )}
           </div>
 
@@ -516,14 +628,25 @@ export default function RecitePracticeScreen({
             <p className="transcript-final">{recitation.finalText}</p>
           ) : (
             <p className="transcript-placeholder">
-              {phase === "listening"
-                ? "ابدأ القراءة بصوت واضح…"
-                : "لم تُسجّل تلاوة بعد. اضغط «ابدأ التلاوة» عندما تكون جاهزاً."}
+              {analyzing
+                ? "أستمع إلى تسجيلك وأدقّق الكلمات…"
+                : phase === "listening"
+                  ? "ابدأ القراءة بصوت واضح…"
+                  : "لم تُسجّل تلاوة بعد. اضغط «ابدأ التلاوة» عندما تكون جاهزاً."}
             </p>
           )}
 
           {phase === "listening" && recitation.interim && (
             <p className="transcript-interim">{recitation.interim}</p>
+          )}
+
+          {aiNote && <p className="recite-ai-note">🤖 {aiNote}</p>}
+
+          {audioUrl && phase !== "listening" && (
+            <div className="recite-recording">
+              <span>🎧 استمع إلى تسجيلك</span>
+              <audio controls src={audioUrl} preload="metadata" />
+            </div>
           )}
         </div>
 
@@ -555,6 +678,11 @@ export default function RecitePracticeScreen({
                     ⚠️ {result.missingCount}
                   </span>
                 </div>
+                {result.source === "gemini" && (
+                  <span className="recite-ai-badge">
+                    🤖 دقّق Gemini تسجيلك كلمة بكلمة
+                  </span>
+                )}
                 <p className="recite-best-note">
                   أفضل نتيجة لك في هذه الآية: <b>{bestShown}%</b>
                 </p>
@@ -619,9 +747,13 @@ export default function RecitePracticeScreen({
               type="button"
               className="btn btn-danger mic-stop"
               onClick={stopListening}
-              disabled={verifying}
+              disabled={verifying || analyzing}
             >
-              {verifying ? "جارٍ التحقق…" : "⏹ أوقف وتحقق"}
+              {analyzing
+                ? "أدقّق التلاوة…"
+                : verifying
+                  ? "جارٍ التحقق…"
+                  : "⏹ أوقف وتحقق"}
             </button>
           )}
 
@@ -654,8 +786,9 @@ export default function RecitePracticeScreen({
         </div>
 
         <p className="recite-privacy">
-          🔒 لا تُحفظ تسجيلاتك في اللعبة. يتعرّف المتصفح على الكلام عبر خدمة
-          التعرف الصوتي، ولا نخزّن الصوت ولا نرسله إلى خادمنا.
+          🔒 لا تُحفظ تسجيلاتك في اللعبة. عند تفعيل Gemini يُرسل التسجيل مباشرة
+          إلى Google لتدقيق التلاوة، ولا يُرسل إلى خادمنا. وبدون المفتاح يستخدم
+          المتصفح التعرف الصوتي المدمج فقط.
         </p>
       </main>
     </div>

@@ -3552,6 +3552,191 @@ kbd {
   }
 }
 
+/* =========================================================
+   Gemini: إعدادات المفتاح والصوت والتصحيح الذكي
+   ========================================================= */
+.gemini-chip {
+  border: 2px solid #ddd6fe;
+  background: #f5f3ff;
+  color: #6d28d9;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.gemini-chip:hover {
+  transform: translateY(-1px);
+  background: #ede9fe;
+}
+
+.gemini-chip.on {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.gemini-setup {
+  display: grid;
+  gap: 12px;
+}
+
+.gemini-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8f7ff;
+  color: #6b6385;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.gemini-state.on {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.gemini-field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #4c1d95;
+}
+
+.gemini-field input,
+.gemini-field select {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 2px solid #e5e1f5;
+  background: #fbfaff;
+  color: #2e2a4a;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gemini-field input:focus,
+.gemini-field select:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.18);
+}
+
+.gemini-error {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.gemini-links {
+  display: grid;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.7;
+  color: #7b7497;
+}
+
+.gemini-links a {
+  color: #7c3aed;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.gemini-links a:hover {
+  text-decoration: underline;
+}
+
+.danger-text {
+  color: #b91c1c !important;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #ede9fe;
+  border: 1px solid #ddd6fe;
+  color: #6d28d9;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.recite-ai-note {
+  margin: 8px 0 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f5f3ff;
+  border: 1px dashed #c4b5fd;
+  color: #5b21b6;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.75;
+}
+
+.recite-ai-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.recite-recording {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd6fe;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #6d28d9;
+}
+
+.recite-recording audio {
+  width: 100%;
+  height: 36px;
+}
+
+.recite-support-warning > div {
+  display: grid;
+  gap: 8px;
+}
+
+.recite-support-warning > div p {
+  margin: 0;
+}
+
+.recite-support-warning .btn {
+  justify-self: start;
+}
+
+@media (max-width: 640px) {
+  .topbar-actions .gemini-label {
+    display: none;
+  }
+
+  .recite-top-tools {
+    justify-content: flex-start;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -25,7 +25,9 @@ export default function ReciteScreen({
   onExit,
   onRecord,
   speech,
-  sound
+  sound,
+  hasGemini = false,
+  onOpenGemini
 }) {
   const selected =
     selectedIndex !== null && selectedIndex !== undefined
@@ -46,6 +48,8 @@ export default function ReciteScreen({
         onRecord={onRecord}
         speech={speech}
         sound={sound}
+        hasGemini={hasGemini}
+        onOpenGemini={onOpenGemini}
       />
     );
   }
@@ -83,7 +87,18 @@ export default function ReciteScreen({
           </div>
         </div>
 
-        <span className="chip recitation-chip">🎧 تصحيح فوري</span>
+        <div className="recite-top-tools">
+          <button
+            type="button"
+            className={`chip gemini-chip ${hasGemini ? "on" : ""}`}
+            onClick={onOpenGemini}
+            title="إعداد أصوات Gemini والتصحيح الذكي"
+          >
+            <span aria-hidden="true">✨</span>
+            {hasGemini ? "Gemini مفعّل" : "أصوات Gemini"}
+          </button>
+          <span className="chip recitation-chip">🎧 تصحيح فوري</span>
+        </div>
       </header>
 
       <section className="recite-hero card">
@@ -92,8 +107,10 @@ export default function ReciteScreen({
           <span className="eyebrow">✨ مرحلة اختيارية جديدة</span>
           <h1>اقرأ الآية بصوتك، وأنا أصحّح لك</h1>
           <p>
-            اختر آية قصيرة، ثم اقرأها بصوت واضح. سأستمع إليك، وأحدّد الكلمات
-            الصحيحة والقريبة والتي تحتاج مراجعة، وأشرح لك حكم التجويد ببساطة.
+            اختر آية قصيرة، ثم اقرأها بصوت واضح. سأسجّل صوتك وأستمع إليك،
+            وأحدّد الكلمات الصحيحة والقريبة والتي تحتاج مراجعة، وأشرح لك حكم
+            التجويد ببساطة. فعّل Gemini للحصول على تدقيق أدق حتى لو لم يتعرف
+            المتصفح على صوتك.
           </p>
 
           <div className="recite-hero-stats">
@@ -133,13 +150,18 @@ export default function ReciteScreen({
         </div>
       </section>
 
-      {!supported && (
+      {!supported && !hasGemini && (
         <div className="recite-support-warning" role="status">
           <span aria-hidden="true">🎧</span>
-          <p>
-            متصفحك لا يدعم الاستماع إلى الكلام. يمكنك الاستماع للآيات والتدرب
-            عليها، وللحصول على تصحيح تلقائي استخدم متصفح Chrome أو Edge.
-          </p>
+          <div>
+            <p>
+              متصفحك لا يدعم التعرف على الكلام. يمكنك الاستماع للآيات والتدرب
+              عليها، أو تفعيل Gemini ليصحح تلاوتك من تسجيل صوتك مباشرة.
+            </p>
+            <button type="button" className="btn btn-soft" onClick={onOpenGemini}>
+              ✨ إعداد أصوات Gemini
+            </button>
+          </div>
         </div>
       )}
 
@@ -211,7 +233,7 @@ export default function ReciteScreen({
           . هذه المرحلة اختيارية ولا تؤثر على فتح مراحل التجويد.
         </p>
         <span className="save-pill local">
-          🎙️ صوتك يُعالَج للتعرف على الكلام فقط، ولا يُحفظ في اللعبة
+          🎙️ الصوت يُعالج للتصحيح فقط، ولا تُحفظ التسجيلات في اللعبة
         </span>
       </footer>
     </div>
