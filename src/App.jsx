@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { levelsData } from "./data/levels.js";
+import { recitationsData } from "./data/recitations.js";
 import { useProgress } from "./hooks/useProgress.js";
 import { useSound } from "./hooks/useSound.js";
 import { useSpeech } from "./hooks/useSpeech.js";
@@ -18,12 +19,14 @@ import Modal from "./components/Modal.jsx";
 import HomeScreen from "./screens/HomeScreen.jsx";
 import QuizScreen from "./screens/QuizScreen.jsx";
 import ResultScreen from "./screens/ResultScreen.jsx";
+import ReciteScreen from "./screens/ReciteScreen.jsx";
 
 export default function App() {
   const {
     progress,
     saveState,
     recordResult,
+    recordRecitation,
     saveSession,
     clearSession,
     setSound,
@@ -33,7 +36,8 @@ export default function App() {
   const sound = useSound(progress.sound);
   const speech = useSpeech();
 
-  const [screen, setScreen] = useState("home"); // home | quiz | result
+  const [screen, setScreen] = useState("home"); // home | quiz | result | recite
+  const [reciteIndex, setReciteIndex] = useState(null);
   const [attempt, setAttempt] = useState(null);
   const [result, setResult] = useState(null);
   const [paused, setPaused] = useState(false);
@@ -116,6 +120,41 @@ export default function App() {
     clearSession();
     showToast("تم حذف المحاولة السابقة، اختر مرحلة جديدة 🌱");
   }, [clearSession, showToast]);
+
+  /* ---------- مرحلة التلاوة الاختيارية ---------- */
+
+  const openRecitation = useCallback(() => {
+    setReciteIndex(null);
+    setAttempt(null);
+    setResult(null);
+    setScreen("recite");
+    speech.cancel();
+    sound.click();
+  }, [speech, sound]);
+
+  const selectRecitation = useCallback(
+    (index) => {
+      if (index === null || index === undefined) {
+        setReciteIndex(null);
+      } else {
+        const safeIndex = Math.max(
+          0,
+          Math.min(recitationsData.length - 1, index)
+        );
+        setReciteIndex(safeIndex);
+      }
+      setScreen("recite");
+      speech.cancel();
+      sound.click();
+    },
+    [speech, sound]
+  );
+
+  const exitRecitation = useCallback(() => {
+    setReciteIndex(null);
+    setScreen("home");
+    speech.cancel();
+  }, [speech]);
 
   /* ---------- الإجابة والانتقال ---------- */
 
@@ -279,6 +318,7 @@ export default function App() {
   const goHome = useCallback(() => {
     setResult(null);
     setAttempt(null);
+    setReciteIndex(null);
     setScreen("home");
   }, []);
 
@@ -293,6 +333,7 @@ export default function App() {
     setResetOpen(false);
     setAttempt(null);
     setResult(null);
+    setReciteIndex(null);
     setScreen("home");
     showToast("تم مسح التقدم، بداية جديدة موفقة 🌱");
   }, [resetAll, showToast]);
@@ -372,7 +413,7 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [screen, attempt?.index]);
+  }, [screen, attempt?.index, reciteIndex]);
 
   useEffect(() => () => speech.cancel(), [speech.cancel]);
 
@@ -401,6 +442,7 @@ export default function App() {
       {screen === "home" && (
         <HomeScreen
           levels={levelsData}
+          recitations={recitationsData}
           progress={progress}
           totalStars={totalStarsCount}
           passedCount={passedCount}
@@ -409,8 +451,22 @@ export default function App() {
           onStart={startLevel}
           onResume={resumeSession}
           onDiscardSession={discardSession}
+          onOpenRecitation={openRecitation}
           onToggleSound={toggleSound}
           onReset={() => setResetOpen(true)}
+        />
+      )}
+
+      {screen === "recite" && (
+        <ReciteScreen
+          recitations={recitationsData}
+          progress={progress}
+          selectedIndex={reciteIndex}
+          onSelect={selectRecitation}
+          onExit={exitRecitation}
+          onRecord={recordRecitation}
+          speech={speech}
+          sound={sound}
         />
       )}
 
@@ -478,8 +534,8 @@ export default function App() {
         }
       >
         <p>
-          سيتم حذف جميع النجوم والنتائج والمحاولة المحفوظة على هذا الجهاز. لا يمكن التراجع عن
-          هذه الخطوة.
+          سيتم حذف جميع النجوم والنتائج وتقدم التلاوة والمحاولة المحفوظة على هذا
+          الجهاز. لا يمكن التراجع عن هذه الخطوة.
         </p>
       </Modal>
     </div>

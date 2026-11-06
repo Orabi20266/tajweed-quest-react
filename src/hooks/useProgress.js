@@ -70,6 +70,7 @@ export function useProgress() {
       writeStore(IP_STORAGE_PREFIX + ipRef.current, {
         best: progress.best,
         fastest: progress.fastest,
+        recitation: progress.recitation,
         session: progress.session,
         updatedAt: stamped.updatedAt
       });
@@ -89,6 +90,25 @@ export function useProgress() {
       }
 
       return { ...current, best, fastest, session: null, updatedAt: Date.now() };
+    });
+  }, []);
+
+  const recordRecitation = useCallback(({ id, percent }) => {
+    const safe = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+
+    setProgress((current) => {
+      const previous = current.recitation?.[id];
+      return {
+        ...current,
+        recitation: {
+          ...current.recitation,
+          [id]: {
+            best: Math.max(previous?.best ?? 0, safe),
+            attempts: (previous?.attempts ?? 0) + 1,
+            updatedAt: Date.now()
+          }
+        }
+      };
     });
   }, []);
 
@@ -125,6 +145,7 @@ export function useProgress() {
     progress,
     saveState,
     recordResult,
+    recordRecitation,
     saveSession,
     clearSession,
     setSound,

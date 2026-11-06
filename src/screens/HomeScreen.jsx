@@ -5,6 +5,7 @@ import {
   isLevelUnlocked,
   starsFor
 } from "../lib/game.js";
+import { RECITATION_MASTERED, starsForRecitation } from "../lib/recitation.js";
 
 function Stars({ count }) {
   return (
@@ -76,6 +77,7 @@ function LevelCard({ level, index, best, fastest, locked, onStart }) {
 
 export default function HomeScreen({
   levels,
+  recitations = [],
   progress,
   totalStars,
   passedCount,
@@ -84,12 +86,23 @@ export default function HomeScreen({
   onStart,
   onResume,
   onDiscardSession,
+  onOpenRecitation,
   onToggleSound,
   onReset
 }) {
   const session = progress.session;
   const sessionLevel = session ? levels[session.levelIndex] : null;
   const canResume = Boolean(session && sessionLevel);
+
+  const recitationBests = recitations.map(
+    (item) => progress.recitation?.[item.id]?.best ?? 0
+  );
+  const masteredRecitations = recitationBests.filter(
+    (value) => value >= RECITATION_MASTERED
+  ).length;
+  const practicedRecitations = recitationBests.filter((value) => value > 0).length;
+  const bestRecitation =
+    recitationBests.length > 0 ? Math.max(...recitationBests) : 0;
 
   return (
     <div className="screen home-screen">
@@ -204,6 +217,51 @@ export default function HomeScreen({
               بدء من جديد
             </button>
           </div>
+        </section>
+      )}
+
+      {recitations.length > 0 && (
+        <section className="recite-banner" aria-labelledby="recite-banner-title">
+          <span className="recite-banner-orb orb-1" aria-hidden="true" />
+          <span className="recite-banner-orb orb-2" aria-hidden="true" />
+
+          <div className="recite-banner-icon" aria-hidden="true">
+            🎙️
+          </div>
+
+          <div className="recite-banner-body">
+            <span className="recite-banner-eyebrow">✨ مرحلة اختيارية جديدة</span>
+            <h2 id="recite-banner-title">تلاوة وتصحيح مع إيهاب</h2>
+            <p>
+              اقرأ الآية بصوتك، وسأستمع إليك وأصحّح الكلمات التي تحتاج مراجعة.
+              ثماني آيات قصيرة، وتلاوة مرجعية، وحكم تجويد لكل آية.
+            </p>
+
+            <div className="recite-banner-badges">
+              <span className="recite-badge">
+                🕌 {masteredRecitations} / {recitations.length} آيات متقنة
+              </span>
+              <span className="recite-badge">
+                🎧 {practicedRecitations} آيات تدربت عليها
+              </span>
+              {bestRecitation > 0 && (
+                <span className="recite-badge best">
+                  🏆 أفضل تلاوة {bestRecitation}%{" "}
+                  {"⭐".repeat(starsForRecitation(bestRecitation))}
+                </span>
+              )}
+              <span className="recite-badge">لا تؤثر على تقدم المراحل</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn recite-banner-btn"
+            onClick={onOpenRecitation}
+          >
+            ادخل مرحلة التلاوة
+            <span aria-hidden="true">🎙️</span>
+          </button>
         </section>
       )}
 

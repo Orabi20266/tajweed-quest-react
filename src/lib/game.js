@@ -89,6 +89,7 @@ export function emptyProgress() {
   return {
     best: {},
     fastest: {},
+    recitation: {},
     sound: true,
     session: null,
     updatedAt: 0
@@ -132,8 +133,25 @@ export function normalizeProgress(raw) {
     });
   }
 
+  const recitation = {};
+  if (raw.recitation && typeof raw.recitation === "object") {
+    Object.entries(raw.recitation).forEach(([key, value]) => {
+      const record = typeof value === "number" ? { best: value } : value;
+      const best = Number(record?.best);
+      if (!Number.isFinite(best) || best < 0) return;
+
+      const attempts = Number(record?.attempts);
+      recitation[key] = {
+        best: Math.min(100, Math.round(best)),
+        attempts: Number.isFinite(attempts) && attempts > 0 ? Math.round(attempts) : 1,
+        updatedAt: Number.isFinite(record?.updatedAt) ? record.updatedAt : 0
+      };
+    });
+  }
+
   base.best = best;
   base.fastest = fastest;
+  base.recitation = recitation;
   base.sound = raw.sound !== false;
   base.session = isValidSession(raw.session) ? raw.session : null;
   base.updatedAt = Number.isFinite(raw.updatedAt) ? raw.updatedAt : 0;
@@ -144,7 +162,12 @@ export function normalizeProgress(raw) {
 export function mergeProgress(current, incoming) {
   const a = normalizeProgress(current);
   const b = normalizeProgress(incoming);
-  const merged = { ...a, best: { ...a.best }, fastest: { ...a.fastest } };
+  const merged = {
+    ...a,
+    best: { ...a.best },
+    fastest: { ...a.fastest },
+    recitation: { ...a.recitation }
+  };
 
   Object.entries(b.best).forEach(([key, value]) => {
     if (value > (merged.best[key] ?? 0)) merged.best[key] = value;
@@ -153,6 +176,20 @@ export function mergeProgress(current, incoming) {
   Object.entries(b.fastest).forEach(([key, value]) => {
     const existing = merged.fastest[key];
     if (!existing || value < existing) merged.fastest[key] = value;
+  });
+
+  Object.entries(b.recitation).forEach(([key, value]) => {
+    const existing = merged.recitation[key];
+    if (!existing) {
+      merged.recitation[key] = value;
+      return;
+    }
+
+    merged.recitation[key] = {
+      best: Math.max(existing.best, value.best),
+      attempts: Math.max(existing.attempts, value.attempts),
+      updatedAt: Math.max(existing.updatedAt, value.updatedAt)
+    };
   });
 
   if (b.session && (b.session.updatedAt ?? 0) > (a.session?.updatedAt ?? 0)) {
