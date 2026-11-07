@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { RECITATION_MASTERED, isSpeechRecognitionSupported, starsForRecitation } from "../lib/recitation.js";
 import RecitePracticeScreen from "./RecitePracticeScreen.jsx";
 
@@ -34,14 +35,46 @@ export default function ReciteScreen({
       ? recitations[selectedIndex]
       : null;
 
+  const [surahFilter, setSurahFilter] = useState("all");
+
+  const surahGroups = useMemo(() => {
+    const map = new Map();
+
+    recitations.forEach((item) => {
+      const key = item.surahId ?? item.surah;
+      if (!map.has(key)) {
+        map.set(key, {
+          id: key,
+          name: item.surah,
+          items: []
+        });
+      }
+      map.get(key).items.push(item);
+    });
+
+    return [...map.values()];
+  }, [recitations]);
+
+  const visibleGroups =
+    surahFilter === "all"
+      ? surahGroups
+      : surahGroups.filter((group) => group.id === surahFilter);
+
   if (selected) {
+    const selectedGroup = surahGroups.find(
+      (group) => group.id === (selected.surahId ?? selected.surah)
+    );
+    const indexInGroup = selectedGroup
+      ? selectedGroup.items.indexOf(selected)
+      : selectedIndex;
+
     return (
       <RecitePracticeScreen
         key={selected.id}
         ayah={selected}
         best={progress.recitation?.[selected.id]?.best ?? 0}
-        position={selectedIndex + 1}
-        total={recitations.length}
+        position={indexInGroup + 1}
+        total={selectedGroup ? selectedGroup.items.length : recitations.length}
         hasNext={selectedIndex + 1 < recitations.length}
         onNext={() => onSelect(selectedIndex + 1)}
         onBack={() => onSelect(null)}
@@ -83,7 +116,7 @@ export default function ReciteScreen({
           </span>
           <div className="quiz-level-text">
             <strong>قسم التلاوة والتصحيح</strong>
-            <span>قسم مستقل · {recitations.length} آية قصيرة</span>
+            <span>قسم مستقل · {surahGroups.length} سور كاملة · {recitations.length} آية</span>
           </div>
         </div>
 
@@ -105,12 +138,12 @@ export default function ReciteScreen({
         <div className="recite-hero-glow" aria-hidden="true" />
         <div className="recite-hero-text">
           <span className="eyebrow">✨ قسم مستقل عن المراحل</span>
-          <h1>اقرأ الآية بصوتك، وأنا أصحّح لك</h1>
+          <h1>اقرأ من حفظك، وأنا أصحّح لك</h1>
           <p>
-            اختر آية قصيرة، ثم اقرأها بصوت واضح. سأسجّل صوتك وأستمع إليك،
-            وأحدّد الكلمات الصحيحة والقريبة والتي تحتاج مراجعة، وأشرح لك حكم
-            التجويد ببساطة. فعّل Gemini للحصول على تدقيق أدق حتى لو لم يتعرف
-            المتصفح على صوتك.
+            اختر سورة كاملة أو آية واحدة، ثم اقرأها بصوت واضح. سأسجّل صوتك
+            وأستمع إليك، وأحدّد الكلمات الصحيحة والقريبة والتي تحتاج مراجعة،
+            وأشرح لك حكم التجويد ببساطة. يمكنك إخفاء الآية والقراءة من حفظك،
+            وستظهر الكلمات التي تقرؤها أثناء التلاوة.
           </p>
 
           <div className="recite-hero-stats">
@@ -167,57 +200,118 @@ export default function ReciteScreen({
 
       <section className="recite-list-section">
         <div className="section-head">
-          <h2>اختر آية للتلاوة</h2>
+          <h2>اختر سورة كاملة أو آية للتلاوة</h2>
           <span className="section-hint">
             {RECITATION_MASTERED}% أو أكثر تعني أنك أتقنت الآية
           </span>
         </div>
 
-        <div className="recite-grid">
-          {recitations.map((item, index) => {
-            const record = progress.recitation?.[item.id]?.best ?? 0;
-            const stars = starsForRecitation(record);
-            const mastered = record >= RECITATION_MASTERED;
+        <div className="recite-surah-filter" role="tablist" aria-label="تصفية السور">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={surahFilter === "all"}
+            className={`recite-surah-chip ${surahFilter === "all" ? "active" : ""}`}
+            onClick={() => setSurahFilter("all")}
+          >
+            <span>كل السور</span>
+            <small>{recitations.length}</small>
+          </button>
+
+          {surahGroups.map((group) => {
+            const masteredInSurah = group.items.filter(
+              (item) =>
+                (progress.recitation?.[item.id]?.best ?? 0) >=
+                RECITATION_MASTERED
+            ).length;
 
             return (
               <button
+                key={group.id}
                 type="button"
-                key={item.id}
-                className={`recite-card ${mastered ? "mastered" : ""}`}
-                style={{ "--c1": item.c1, "--c2": item.c2 }}
-                onClick={() => onSelect(index)}
-                aria-label={`سورة ${item.surah} الآية ${item.ayah}${
-                  mastered ? " — متقنة" : ""
-                }`}
+                role="tab"
+                aria-selected={surahFilter === group.id}
+                className={`recite-surah-chip ${
+                  surahFilter === group.id ? "active" : ""
+                } ${masteredInSurah === group.items.length ? "complete" : ""}`}
+                onClick={() => setSurahFilter(group.id)}
               >
-                <span className="recite-card-strip" aria-hidden="true" />
-
-                <span className="recite-card-top">
-                  <span className="recite-card-surah">سورة {item.surah}</span>
-                  <span className="recite-card-label">{item.label}</span>
-                </span>
-
-                <span className="recite-card-ayah" dir="rtl" lang="ar">
-                  {item.text}
-                </span>
-
-                <span className="recite-card-bottom">
-                  <span className="recite-card-num">الآية {item.ayah}</span>
-                  <span className="recite-card-record">
-                    {record > 0 ? `أفضل تلاوة ${record}%` : "لم تُختبر بعد"}
-                  </span>
-                </span>
-
-                <span className="recite-card-foot">
-                  <SmallStars count={stars} />
-                  <span className={`recite-card-cta ${mastered ? "done" : ""}`}>
-                    {mastered ? "✓ متقنة · أعد التلاوة" : "ابدأ التلاوة 🎙️"}
-                  </span>
-                </span>
+                <span>سورة {group.name}</span>
+                <small>
+                  {masteredInSurah > 0
+                    ? `${masteredInSurah}/${group.items.length}`
+                    : group.items.length}
+                </small>
               </button>
             );
           })}
         </div>
+
+        {visibleGroups.map((group) => (
+          <div className="recite-surah-group" key={group.id}>
+            <div className="recite-surah-head">
+              <h3>سورة {group.name}</h3>
+              <span>
+                {group.items.length} {group.items.length === 1 ? "آية" : "آيات"}
+              </span>
+            </div>
+
+            <div className="recite-grid">
+              {group.items.map((item) => {
+                const index = recitations.indexOf(item);
+                const record = progress.recitation?.[item.id]?.best ?? 0;
+                const stars = starsForRecitation(record);
+                const mastered = record >= RECITATION_MASTERED;
+
+                return (
+                  <button
+                    type="button"
+                    key={item.id}
+                    className={`recite-card ${mastered ? "mastered" : ""}`}
+                    style={{ "--c1": item.c1, "--c2": item.c2 }}
+                    onClick={() => onSelect(index)}
+                    aria-label={`سورة ${item.surah} الآية ${item.ayah}${
+                      mastered ? " — متقنة" : ""
+                    }`}
+                  >
+                    <span className="recite-card-strip" aria-hidden="true" />
+
+                    <span className="recite-card-top">
+                      <span className="recite-card-surah">
+                        سورة {item.surah}
+                      </span>
+                      <span className="recite-card-label">{item.label}</span>
+                    </span>
+
+                    <span className="recite-card-ayah" dir="rtl" lang="ar">
+                      {item.text}
+                    </span>
+
+                    <span className="recite-card-bottom">
+                      <span className="recite-card-num">
+                        الآية {item.ayah}
+                      </span>
+                      <span className="recite-card-record">
+                        {record > 0 ? `أفضل تلاوة ${record}%` : "لم تُختبر بعد"}
+                      </span>
+                    </span>
+
+                    <span className="recite-card-foot">
+                      <SmallStars count={stars} />
+                      <span
+                        className={`recite-card-cta ${mastered ? "done" : ""}`}
+                      >
+                        {mastered
+                          ? "✓ متقنة · أعد التلاوة"
+                          : "ابدأ التلاوة 🎙️"}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </section>
 
       <footer className="footer">

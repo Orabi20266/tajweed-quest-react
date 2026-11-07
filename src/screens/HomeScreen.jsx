@@ -106,6 +106,9 @@ export default function HomeScreen({
   const practicedRecitations = recitationBests.filter((value) => value > 0).length;
   const bestRecitation =
     recitationBests.length > 0 ? Math.max(...recitationBests) : 0;
+  const surahCount = new Set(
+    recitations.map((item) => item.surahId ?? item.surah)
+  ).size;
 
   return (
     <div className="screen home-screen">
@@ -323,8 +326,9 @@ export default function HomeScreen({
                 <h2 id="recite-banner-title">تلاوة وتصحيح مع إيهاب</h2>
                 <p>
                   اقرأ الآية بصوتك، وسأستمع إليك وأصحّح الكلمات التي تحتاج مراجعة.{" "}
-                  {recitations.length} آية قصيرة، وتلاوة مرجعية بصوت الشيخ محمود
-                  خليل الحصري، وحكم تجويد لكل آية.
+                  {surahCount} سور كاملة و{recitations.length} آية، وتلاوة مرجعية
+                  بصوت الشيخ محمود خليل الحصري، وحكم تجويد لكل آية. يمكنك إخفاء
+                  الآية والقراءة من حفظك.
                 </p>
 
                 <div className="recite-banner-badges">

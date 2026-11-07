@@ -102,6 +102,9 @@ export default function RecitePracticeScreen({
     ? ERROR_MESSAGES[recitation.error] ?? ERROR_MESSAGES.unknown
     : "";
   const showingNoSpeech = noSpeech && !recitation.error;
+  const liveFinalWords = splitWords(recitation.finalText);
+  const liveInterimWords = splitWords(recitation.interim);
+  const liveWordCount = liveFinalWords.length + liveInterimWords.length;
   const verifying =
     phase === "listening" &&
     !recitation.starting &&
@@ -478,7 +481,7 @@ export default function RecitePracticeScreen({
 
         <p className="recite-instruction">
           {hideAyah
-            ? "الآية مخفية الآن — اقرأ من حفظك، وعند إيقاف التسجيل ستظهر الآية مع تصحيح الكلمات."
+            ? "الآية مخفية الآن — اقرأ من حفظك، وستظهر الكلمات التي يسمعها إيهاب هنا مباشرة أثناء تلاوتك."
             : "اضغط على أي كلمة لسماع نطقها، ثم اقرأ الآية كاملة بصوت واضح. سيسجّل التطبيق صوتك، ويستخدم Gemini لتدقيق التلاوة عند تفعيله، ويتوقف الاستماع تلقائياً عند سكوتك."}
         </p>
 
@@ -507,10 +510,67 @@ export default function RecitePracticeScreen({
           {hideAyah ? (
             <div className="ayah-hidden-state">
               <span className="ayah-hidden-icon" aria-hidden="true">
-                🙈
+                {phase === "listening" ? "🎙️" : "🙈"}
               </span>
-              <strong>الآية مخفية</strong>
-              <p>اقرأ الآية من حفظك الآن، ثم أوقف التسجيل ليصحح إيهاب تلاوتك.</p>
+              <strong>
+                {phase === "listening" ? "أسمعك… اقرأ من حفظك" : "الآية مخفية"}
+              </strong>
+              <p>
+                {phase === "listening"
+                  ? "الكلمات التي يتعرف عليها إيهاب تظهر لحظياً في الصندوق أدناه."
+                  : "اضغط «ابدأ التلاوة» ثم اقرأ من حفظك، وستظهر الكلمات التي تقرؤها هنا مباشرة."}
+              </p>
+
+              <div
+                className={`ayah-live ${phase === "listening" ? "on" : ""}`}
+                aria-live="polite"
+              >
+                <div className="ayah-live-head">
+                  <span>📝 الكلمات التي أقرؤها</span>
+                  {phase === "listening" ? (
+                    <span className="live-label">
+                      <span className="live-dot" aria-hidden="true" />
+                      مباشر
+                    </span>
+                  ) : (
+                    <span className="ayah-live-count">
+                      {liveWordCount > 0 ? `${liveWordCount} كلمة` : "لا شيء بعد"}
+                    </span>
+                  )}
+                </div>
+
+                {liveWordCount > 0 ? (
+                  <p className="ayah-live-words" dir="rtl" lang="ar">
+                    {liveFinalWords.map((word, index) => (
+                      <span className="ayah-live-word" key={`final-${index}`}>
+                        {word}
+                      </span>
+                    ))}
+                    {liveInterimWords.map((word, index) => (
+                      <span
+                        className="ayah-live-word interim"
+                        key={`interim-${index}`}
+                      >
+                        {word}
+                      </span>
+                    ))}
+                  </p>
+                ) : (
+                  <p className="ayah-live-empty">
+                    {phase === "listening"
+                      ? "ابدأ القراءة بصوت واضح… ستظهر كلماتك هنا."
+                      : "لم تُسجّل تلاوة بعد. اضغط «ابدأ التلاوة» عندما تكون جاهزاً."}
+                  </p>
+                )}
+
+                {!recitation.recognitionSupported && (
+                  <p className="ayah-live-note">
+                    التعرف المباشر على الكلمات غير متاح في هذا المتصفح، لكن
+                    التصحيح من تسجيل الصوت يعمل عند تفعيل Gemini.
+                  </p>
+                )}
+              </div>
+
               <button
                 type="button"
                 className="btn btn-soft ayah-reveal-btn"
