@@ -1,5 +1,4 @@
-import EhabAvatar from "../components/EhabAvatar.jsx";
-import {
+import EhabAvatar from "../components/EhabAvatar.jsx";import {
   PASS_PERCENT,
   formatTime,
   isLevelUnlocked,
@@ -90,7 +89,9 @@ export default function HomeScreen({
   onToggleSound,
   onReset,
   hasGemini = false,
-  onOpenGemini
+  onOpenGemini,
+  section = "levels",
+  onSectionChange
 }) {
   const session = progress.session;
   const sessionLevel = session ? levels[session.levelIndex] : null;
@@ -202,108 +203,162 @@ export default function HomeScreen({
         </div>
       </section>
 
-      {canResume && (
-        <section className="resume-card" aria-label="متابعة المحاولة">
-          <div className="resume-icon" aria-hidden="true">
-            ⏯
-          </div>
-          <div className="resume-body">
-            <strong>لديك محاولة لم تكتمل</strong>
-            <p>
-              {sessionLevel.icon} {sessionLevel.title} — السؤال {session.index + 1} من{" "}
-              {sessionLevel.questions.length} · متبقٍ {formatTime(session.timeLeft)}
-            </p>
-            <div className="resume-progress" aria-hidden="true">
-              <span
-                style={{
-                  width: `${Math.round(
-                    ((session.index + 1) / sessionLevel.questions.length) * 100
-                  )}%`
-                }}
-              />
-            </div>
-          </div>
-          <div className="resume-actions">
-            <button type="button" className="btn btn-primary" onClick={onResume}>
-              متابعة ▶
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={onDiscardSession}>
-              بدء من جديد
-            </button>
-          </div>
-        </section>
-      )}
-
-      {recitations.length > 0 && (
-        <section className="recite-banner" aria-labelledby="recite-banner-title">
-          <span className="recite-banner-orb orb-1" aria-hidden="true" />
-          <span className="recite-banner-orb orb-2" aria-hidden="true" />
-
-          <div className="recite-banner-icon" aria-hidden="true">
-            🎙️
-          </div>
-
-          <div className="recite-banner-body">
-            <span className="recite-banner-eyebrow">✨ مرحلة اختيارية جديدة</span>
-            <h2 id="recite-banner-title">تلاوة وتصحيح مع إيهاب</h2>
-            <p>
-              اقرأ الآية بصوتك، وسأستمع إليك وأصحّح الكلمات التي تحتاج مراجعة.
-              ثماني آيات قصيرة، وتلاوة مرجعية، وحكم تجويد لكل آية.
-            </p>
-
-            <div className="recite-banner-badges">
-              <span className="recite-badge">
-                🕌 {masteredRecitations} / {recitations.length} آيات متقنة
-              </span>
-              <span className="recite-badge">
-                🎧 {practicedRecitations} آيات تدربت عليها
-              </span>
-              {bestRecitation > 0 && (
-                <span className="recite-badge best">
-                  🏆 أفضل تلاوة {bestRecitation}%{" "}
-                  {"⭐".repeat(starsForRecitation(bestRecitation))}
-                </span>
-              )}
-              <span className="recite-badge">لا تؤثر على تقدم المراحل</span>
-              {hasGemini && (
-                <span className="recite-badge">✨ Gemini مفعّل</span>
-              )}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn recite-banner-btn"
-            onClick={onOpenRecitation}
-          >
-            ادخل مرحلة التلاوة
-            <span aria-hidden="true">🎙️</span>
-          </button>
-        </section>
-      )}
-
-      <section className="levels-section">
-        <div className="section-head">
-          <h2>خريطة المراحل</h2>
-          <span className="section-hint">
-            اجمع {PASS_PERCENT}% أو أكثر لفتح المرحلة التالية
+      <nav className="home-sections" aria-label="أقسام اللعبة">
+        <button
+          type="button"
+          className={`home-section-tab ${section === "levels" ? "active" : ""}`}
+          onClick={() => onSectionChange?.("levels")}
+          aria-pressed={section === "levels"}
+        >
+          <span className="home-section-icon" aria-hidden="true">
+            🗺️
           </span>
-        </div>
+          <span className="home-section-text">
+            <b>المراحل التعليمية</b>
+            <small>
+              {passedCount} من {levels.length} مكتملة · {totalStars} نجمة
+            </small>
+          </span>
+        </button>
 
-        <div className="levels-grid">
-          {levels.map((level, index) => (
-            <LevelCard
-              key={level.id ?? index}
-              level={level}
-              index={index}
-              best={progress.best[index] ?? 0}
-              fastest={progress.fastest[index]}
-              locked={!isLevelUnlocked(index, progress.best)}
-              onStart={onStart}
-            />
-          ))}
+        <button
+          type="button"
+          className={`home-section-tab ${section === "recite" ? "active" : ""}`}
+          onClick={() => onSectionChange?.("recite")}
+          aria-pressed={section === "recite"}
+          disabled={recitations.length === 0}
+        >
+          <span className="home-section-icon" aria-hidden="true">
+            🎙️
+          </span>
+          <span className="home-section-text">
+            <b>قسم التلاوة والتصحيح</b>
+            <small>
+              {masteredRecitations} من {recitations.length} آيات متقنة · مستقل عن
+              المراحل
+            </small>
+          </span>
+        </button>
+      </nav>
+
+      {section === "levels" ? (
+        <div className="home-section-body">
+          {canResume && (
+            <section className="resume-card" aria-label="متابعة المحاولة">
+              <div className="resume-icon" aria-hidden="true">
+                ⏯
+              </div>
+              <div className="resume-body">
+                <strong>لديك محاولة لم تكتمل</strong>
+                <p>
+                  {sessionLevel.icon} {sessionLevel.title} — السؤال {session.index + 1} من{" "}
+                  {sessionLevel.questions.length} · متبقٍ {formatTime(session.timeLeft)}
+                </p>
+                <div className="resume-progress" aria-hidden="true">
+                  <span
+                    style={{
+                      width: `${Math.round(
+                        ((session.index + 1) / sessionLevel.questions.length) * 100
+                      )}%`
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="resume-actions">
+                <button type="button" className="btn btn-primary" onClick={onResume}>
+                  متابعة ▶
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={onDiscardSession}>
+                  بدء من جديد
+                </button>
+              </div>
+            </section>
+          )}
+
+          <section className="levels-section">
+            <div className="section-head">
+              <h2>خريطة المراحل</h2>
+              <span className="section-hint">
+                اجمع {PASS_PERCENT}% أو أكثر لفتح المرحلة التالية
+              </span>
+            </div>
+
+            <div className="levels-grid">
+              {levels.map((level, index) => (
+                <LevelCard
+                  key={level.id ?? index}
+                  level={level}
+                  index={index}
+                  best={progress.best[index] ?? 0}
+                  fastest={progress.fastest[index]}
+                  locked={!isLevelUnlocked(index, progress.best)}
+                  onStart={onStart}
+                />
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+      ) : (
+        <div className="home-section-body">
+          <div className="section-head recite-section-head">
+            <h2>قسم التلاوة والتصحيح</h2>
+            <span className="section-hint">
+              قسم مستقل تماماً عن المراحل، ولا يؤثر على تقدمك
+            </span>
+          </div>
+
+          {recitations.length > 0 && (
+            <section className="recite-banner" aria-labelledby="recite-banner-title">
+              <span className="recite-banner-orb orb-1" aria-hidden="true" />
+              <span className="recite-banner-orb orb-2" aria-hidden="true" />
+
+              <div className="recite-banner-icon" aria-hidden="true">
+                🎙️
+              </div>
+
+              <div className="recite-banner-body">
+                <span className="recite-banner-eyebrow">
+                  ✨ اقرأ من الحفظ أو من الآية، وإيهاب يصحّح
+                </span>
+                <h2 id="recite-banner-title">تلاوة وتصحيح مع إيهاب</h2>
+                <p>
+                  اقرأ الآية بصوتك، وسأستمع إليك وأصحّح الكلمات التي تحتاج مراجعة.{" "}
+                  {recitations.length} آية قصيرة، وتلاوة مرجعية بصوت الشيخ محمود
+                  خليل الحصري، وحكم تجويد لكل آية.
+                </p>
+
+                <div className="recite-banner-badges">
+                  <span className="recite-badge">
+                    🕌 {masteredRecitations} / {recitations.length} آيات متقنة
+                  </span>
+                  <span className="recite-badge">
+                    🎧 {practicedRecitations} آيات تدربت عليها
+                  </span>
+                  {bestRecitation > 0 && (
+                    <span className="recite-badge best">
+                      🏆 أفضل تلاوة {bestRecitation}%{" "}
+                      {"⭐".repeat(starsForRecitation(bestRecitation))}
+                    </span>
+                  )}
+                  <span className="recite-badge">لا تؤثر على تقدم المراحل</span>
+                  {hasGemini && (
+                    <span className="recite-badge">✨ Gemini مفعّل</span>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn recite-banner-btn"
+                onClick={onOpenRecitation}
+              >
+                ادخل قسم التلاوة
+                <span aria-hidden="true">🎙️</span>
+              </button>
+            </section>
+          )}
+        </div>
+      )}
 
       <footer className="footer">
         <p>

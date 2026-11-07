@@ -102,7 +102,18 @@ export function useSpeech() {
   );
 
   const speak = useCallback(
-    (text, { rate = 0.9, pitch = 1, voice, style, onEnd } = {}) => {
+    (
+      text,
+      {
+        rate = 0.9,
+        pitch = 1,
+        voice,
+        style,
+        onEnd,
+        onError,
+        allowNativeFallback = true
+      } = {}
+    ) => {
       const content = String(text ?? "").trim();
       if (!content) {
         onEnd?.();
@@ -128,24 +139,40 @@ export function useSpeech() {
             const audio = new Audio(url);
             audioRef.current = audio;
 
-            const fallback = () => {
+            const fallback = (reason) => {
               if (audioRef.current === audio) audioRef.current = null;
-              nativeSpeak(content, { rate, pitch, onEnd: finish });
+              if (token !== tokenRef.current) return;
+
+              if (allowNativeFallback) {
+                nativeSpeak(content, { rate, pitch, onEnd: finish });
+                return;
+              }
+
+              onError?.(reason ?? "gemini-audio-failed");
+              finish();
             };
 
             audio.onended = () => {
               if (audioRef.current === audio) audioRef.current = null;
               finish();
             };
-            audio.onerror = fallback;
+            audio.onerror = () => fallback("gemini-audio-failed");
 
             const playing = audio.play();
-            if (playing?.catch) playing.catch(fallback);
-          })
-          .catch(() => {
-            if (token === tokenRef.current) {
-              nativeSpeak(content, { rate, pitch, onEnd: finish });
+            if (playing?.catch) {
+              playing.catch(() => fallback("gemini-playback-blocked"));
             }
+          })
+          .catch((error) => {
+            if (token !== tokenRef.current) return;
+
+            if (allowNativeFallback) {
+              nativeSpeak(content, { rate, pitch, onEnd: finish });
+              return;
+            }
+
+            onError?.(error?.code === "missing-key" ? "missing-key" : error);
+            finish();
           });
 
         return true;

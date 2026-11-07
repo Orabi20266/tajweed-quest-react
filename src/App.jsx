@@ -40,6 +40,7 @@ export default function App() {
   const gemini = useGeminiSettings();
 
   const [screen, setScreen] = useState("home"); // home | quiz | result | recite
+  const [homeSection, setHomeSection] = useState("levels"); // levels | recite
   const [reciteIndex, setReciteIndex] = useState(null);
   const [attempt, setAttempt] = useState(null);
   const [result, setResult] = useState(null);
@@ -96,6 +97,7 @@ export default function App() {
       finishingRef.current = false;
       speech.cancel();
       sound.click();
+      setHomeSection("levels");
       setScreen("quiz");
     },
     [progress.best, showToast, speech, sound]
@@ -131,6 +133,7 @@ export default function App() {
     setReciteIndex(null);
     setAttempt(null);
     setResult(null);
+    setHomeSection("recite");
     setScreen("recite");
     speech.cancel();
     sound.click();
@@ -315,6 +318,7 @@ export default function App() {
     setExitOpen(false);
     setPaused(false);
     setAttempt(null);
+    setHomeSection("levels");
     setScreen("home");
     showToast("💾 تم حفظ تقدمك، يمكنك متابعة المرحلة لاحقاً");
   }, [showToast]);
@@ -323,6 +327,7 @@ export default function App() {
     setResult(null);
     setAttempt(null);
     setReciteIndex(null);
+    setHomeSection("levels");
     setScreen("home");
   }, []);
 
@@ -338,6 +343,7 @@ export default function App() {
     setAttempt(null);
     setResult(null);
     setReciteIndex(null);
+    setHomeSection("levels");
     setScreen("home");
     showToast("تم مسح التقدم، بداية جديدة موفقة 🌱");
   }, [resetAll, showToast]);
@@ -460,6 +466,8 @@ export default function App() {
           onReset={() => setResetOpen(true)}
           hasGemini={gemini.hasKey}
           onOpenGemini={() => setGeminiOpen(true)}
+          section={homeSection}
+          onSectionChange={setHomeSection}
         />
       )}
 

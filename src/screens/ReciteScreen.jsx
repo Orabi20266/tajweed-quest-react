@@ -82,8 +82,8 @@ export default function ReciteScreen({
             🎙️
           </span>
           <div className="quiz-level-text">
-            <strong>مرحلة التلاوة</strong>
-            <span>مرحلة اختيارية · {recitations.length} آيات قصيرة</span>
+            <strong>قسم التلاوة والتصحيح</strong>
+            <span>قسم مستقل · {recitations.length} آية قصيرة</span>
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export default function ReciteScreen({
       <section className="recite-hero card">
         <div className="recite-hero-glow" aria-hidden="true" />
         <div className="recite-hero-text">
-          <span className="eyebrow">✨ مرحلة اختيارية جديدة</span>
+          <span className="eyebrow">✨ قسم مستقل عن المراحل</span>
           <h1>اقرأ الآية بصوتك، وأنا أصحّح لك</h1>
           <p>
             اختر آية قصيرة، ثم اقرأها بصوت واضح. سأسجّل صوتك وأستمع إليك،
@@ -222,7 +222,7 @@ export default function ReciteScreen({
 
       <footer className="footer">
         <p>
-          التلاوة المرجعية للشيخ مشاري العفاسي عبر{" "}
+          التلاوة المرجعية للشيخ محمود خليل الحصري عبر{" "}
           <a
             href="https://alquran.cloud/"
             target="_blank"
@@ -230,7 +230,7 @@ export default function ReciteScreen({
           >
             AlQuran Cloud
           </a>
-          . هذه المرحلة اختيارية ولا تؤثر على فتح مراحل التجويد.
+          . هذا القسم اختياري ولا يؤثر على فتح مراحل التجويد.
         </p>
         <span className="save-pill local">
           🎙️ الصوت يُعالج للتصحيح فقط، ولا تُحفظ التسجيلات في اللعبة

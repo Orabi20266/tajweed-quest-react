@@ -259,8 +259,33 @@ export async function recordingToWav(blob) {
 
 /* ---------- نداء Gemini ---------- */
 
-async function callModel(model, body) {
-  const key = getGeminiKey();
+/* يتحقق أن المفتاح يعمل فعلاً قبل الاعتماد عليه في الأصوات */
+export async function validateGeminiKey(key) {
+  const candidate = String(key ?? getGeminiKey()).trim();
+  if (!candidate) {
+    const error = new Error("missing-key");
+    error.code = "missing-key";
+    throw error;
+  }
+
+  const response = await fetch(`${API_ROOT}/models?pageSize=1`, {
+    method: "GET",
+    headers: { "x-goog-api-key": candidate }
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    const error = new Error(
+      data?.error?.message || `فشل التحقق من المفتاح (${response.status})`
+    );
+    error.status = response.status;
+    throw error;
+  }
+
+  return true;
+}
+
+async function callModel(model, body) {  const key = getGeminiKey();
   if (!key) {
     const error = new Error("missing-key");
     error.code = "missing-key";

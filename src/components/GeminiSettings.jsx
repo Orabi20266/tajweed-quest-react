@@ -9,7 +9,8 @@ import {
   setCorrectionVoice,
   setGeminiKey,
   setGeminiVoice,
-  synthesizeSpeech
+  synthesizeSpeech,
+  validateGeminiKey
 } from "../lib/gemini.js";
 
 const PREVIEW_TEXT =
@@ -26,6 +27,7 @@ export default function GeminiSettings({ open, onClose, onSaved, voice }) {
   const [error, setError] = useState("");
   const [previewState, setPreviewState] = useState("idle");
   const [previewError, setPreviewError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const audioRef = useRef(null);
   const previewToken = useRef(0);
@@ -61,7 +63,7 @@ export default function GeminiSettings({ open, onClose, onSaved, voice }) {
 
   useEffect(() => () => stopPreview(), []);
 
-  const save = () => {
+  const save = async () => {
     const trimmed = value.trim();
 
     if (trimmed && trimmed.length < 20) {
@@ -74,6 +76,25 @@ export default function GeminiSettings({ open, onClose, onSaved, voice }) {
       return;
     }
 
+    const candidate = trimmed || existing;
+    setSaving(true);
+    setError("");
+
+    try {
+      await validateGeminiKey(candidate);
+    } catch (validationError) {
+      setSaving(false);
+      setError(
+        validationError?.status === 401 || validationError?.status === 403
+          ? "المفتاح غير صالح. تأكد من نسخه كاملاً من Google AI Studio."
+          : validationError?.code === "missing-key"
+            ? "أدخل مفتاح Gemini أولاً."
+            : "تعذّر التحقق من المفتاح. تحقق من اتصال الإنترنت ثم أعد المحاولة."
+      );
+      return;
+    }
+
+    setSaving(false);
     if (trimmed) setGeminiKey(trimmed);
     setGeminiVoice(selectedVoice);
     setCorrectionVoice(selectedCorrection);
@@ -164,8 +185,13 @@ export default function GeminiSettings({ open, onClose, onSaved, voice }) {
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             إلغاء
           </button>
-          <button type="button" className="btn btn-primary" onClick={save}>
-            حفظ الإعدادات
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={save}
+            disabled={saving}
+          >
+            {saving ? "جارٍ التحقق…" : "حفظ الإعدادات"}
           </button>
         </>
       }
@@ -213,6 +239,12 @@ export default function GeminiSettings({ open, onClose, onSaved, voice }) {
             ))}
           </select>
         </label>
+
+        <p className="gemini-voices-note">
+          كل الأصوات هنا هي أصوات <b>Google AI Studio</b> الرسمية نفسها المستخدمة
+          في صفحة Generate Speech، وتُشغَّل عبر Gemini TTS بجودة الصوت الأصلية
+          دون أي تحويل.
+        </p>
 
         <div className="gemini-field">
           <span>🗣️ صوت تصحيح الأخطاء وشرح إيهاب</span>

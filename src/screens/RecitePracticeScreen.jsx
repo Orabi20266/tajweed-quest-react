@@ -83,6 +83,7 @@ export default function RecitePracticeScreen({
   const [analyzing, setAnalyzing] = useState(false);
   const [aiNote, setAiNote] = useState("");
   const [audioUrl, setAudioUrl] = useState(null);
+  const [hideAyah, setHideAyah] = useState(false);
 
   const audioRef = useRef(null);
   const referenceToken = useRef(0);
@@ -116,6 +117,11 @@ export default function RecitePracticeScreen({
     setAudioUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [recitation.audioBlob]);
+
+  /* نكشف الآية تلقائياً بعد التصحيح حتى يرى الطالب مواضع الأخطاء */
+  useEffect(() => {
+    if (phase === "checked") setHideAyah(false);
+  }, [phase]);
 
   /* ---------- التلاوة المرجعية ---------- */
 
@@ -449,7 +455,7 @@ export default function RecitePracticeScreen({
             <h1>
               سورة {ayah.surah} — الآية {ayah.ayah}
             </h1>
-            <p>{ayah.label} · التلاوة المرجعية للشيخ مشاري العفاسي</p>
+            <p>{ayah.label} · التلاوة المرجعية للشيخ محمود خليل الحصري</p>
           </div>
 
           <button
@@ -471,12 +477,26 @@ export default function RecitePracticeScreen({
         )}
 
         <p className="recite-instruction">
-          اضغط على أي كلمة لسماع نطقها، ثم اقرأ الآية كاملة بصوت واضح. سيسجّل
-          التطبيق صوتك، ويستخدم Gemini لتدقيق التلاوة عند تفعيله، ويتوقف
-          الاستماع تلقائياً عند سكوتك.
+          {hideAyah
+            ? "الآية مخفية الآن — اقرأ من حفظك، وعند إيقاف التسجيل ستظهر الآية مع تصحيح الكلمات."
+            : "اضغط على أي كلمة لسماع نطقها، ثم اقرأ الآية كاملة بصوت واضح. سيسجّل التطبيق صوتك، ويستخدم Gemini لتدقيق التلاوة عند تفعيله، ويتوقف الاستماع تلقائياً عند سكوتك."}
         </p>
 
-        <div className="ayah-frame">
+        <div className="ayah-frame-head">
+          <span className="ayah-frame-title">📖 الآية</span>
+          <button
+            type="button"
+            className={`ayah-hide-btn ${hideAyah ? "on" : ""}`}
+            onClick={() => setHideAyah((value) => !value)}
+            aria-pressed={hideAyah}
+            title={hideAyah ? "إظهار الآية للمراجعة" : "إخفاء الآية والقراءة من الحفظ"}
+          >
+            <span aria-hidden="true">{hideAyah ? "👁️" : "🙈"}</span>
+            {hideAyah ? "أظهر الآية" : "أخفِ الآية"}
+          </button>
+        </div>
+
+        <div className={`ayah-frame ${hideAyah ? "ayah-frame-hidden" : ""}`}>
           <span className="ayah-corner top-right" aria-hidden="true">
             ۞
           </span>
@@ -484,36 +504,53 @@ export default function RecitePracticeScreen({
             ۞
           </span>
 
-          <div className="ayah-words" dir="rtl" lang="ar">
-            {words.map((word, index) => {
-              const status = wordResults?.[index]?.status;
-              return (
-                <button
-                  type="button"
-                  key={`${word}-${index}`}
-                  className={[
-                    "ayah-word",
-                    status ? `word-${status}` : "",
-                    playingWord === word ? "word-speaking" : ""
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => speakWord(word)}
-                  disabled={!speechSupported || phase === "listening"}
-                  title={
-                    speechSupported
-                      ? "اضغط لسماع نطق الكلمة"
-                      : "النطق الصوتي غير مدعوم في هذا المتصفح"
-                  }
-                >
-                  {word}
-                </button>
-              );
-            })}
-            <span className="ayah-end-mark" aria-hidden="true">
-              ۝
-            </span>
-          </div>
+          {hideAyah ? (
+            <div className="ayah-hidden-state">
+              <span className="ayah-hidden-icon" aria-hidden="true">
+                🙈
+              </span>
+              <strong>الآية مخفية</strong>
+              <p>اقرأ الآية من حفظك الآن، ثم أوقف التسجيل ليصحح إيهاب تلاوتك.</p>
+              <button
+                type="button"
+                className="btn btn-soft ayah-reveal-btn"
+                onClick={() => setHideAyah(false)}
+              >
+                👁️ أظهر الآية للمراجعة
+              </button>
+            </div>
+          ) : (
+            <div className="ayah-words" dir="rtl" lang="ar">
+              {words.map((word, index) => {
+                const status = wordResults?.[index]?.status;
+                return (
+                  <button
+                    type="button"
+                    key={`${word}-${index}`}
+                    className={[
+                      "ayah-word",
+                      status ? `word-${status}` : "",
+                      playingWord === word ? "word-speaking" : ""
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => speakWord(word)}
+                    disabled={!speechSupported || phase === "listening"}
+                    title={
+                      speechSupported
+                        ? "اضغط لسماع نطق الكلمة"
+                        : "النطق الصوتي غير مدعوم في هذا المتصفح"
+                    }
+                  >
+                    {word}
+                  </button>
+                );
+              })}
+              <span className="ayah-end-mark" aria-hidden="true">
+                ۝
+              </span>
+            </div>
+          )}
 
           <div className="ayah-caption">
             <span>
