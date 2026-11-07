@@ -757,7 +757,13 @@ export const surahsData = [
   }
 ];
 
-/* قائمة مسطّحة بكل الآيات، مع اسم السورة ومعرّفها لكل آية */
+/* قائمة مسطّحة بكل الآيات، مع اسم السورة ورقمها ومعرّفها لكل آية */
 export const recitationsData = surahsData.flatMap((surah) =>
-  surah.ayat.map((ayah) => ({ ...ayah, surah: surah.name, surahId: surah.id }))
+  surah.ayat.map((ayah) => ({
+    ...ayah,
+    surah: surah.name,
+    surahId: surah.id,
+    surahNumber: surah.number,
+    surahTip: surah.tip
+  }))
 );

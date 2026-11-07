@@ -2481,6 +2481,240 @@ kbd {
   font-weight: 700;
 }
 
+.recite-surah-head-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.recite-surah-count {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.recite-view-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1.5px solid #e9e2ff;
+  background: #f5f3ff;
+}
+
+.recite-view-btn {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #6d28d9;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.recite-view-btn:hover {
+  background: #ede9fe;
+}
+
+.recite-view-btn.active {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  box-shadow: 0 8px 16px -10px rgba(76, 29, 149, 0.9);
+}
+
+/* ===== عرض السورة كاملة بأسلوب المصحف ===== */
+
+.surah-mushaf {
+  position: relative;
+  padding: 14px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(124, 58, 237, 0.1), transparent 55%),
+    linear-gradient(160deg, #fffdf6, #fdf8ff 60%, #f7f2ff);
+  box-shadow: var(--shadow-soft);
+  animation: fadeIn 0.25s ease both;
+}
+
+.surah-mushaf-frame {
+  position: relative;
+  padding: 18px 22px 20px;
+  border-radius: 22px;
+  border: 2px solid #e7ddc3;
+  outline: 2px solid rgba(124, 58, 237, 0.14);
+  outline-offset: -8px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(161, 140, 92, 0.045) 0 1px,
+      transparent 1px 27px
+    ),
+    linear-gradient(180deg, #fffef9, #fffdf4);
+  box-shadow: inset 0 0 40px rgba(198, 176, 120, 0.08);
+}
+
+.surah-mushaf-corner {
+  position: absolute;
+  top: 8px;
+  color: #c4b5fd;
+  font-size: 1.1rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.surah-mushaf-corner.top-right {
+  right: 10px;
+}
+
+.surah-mushaf-corner.top-left {
+  left: 10px;
+}
+
+.surah-mushaf-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1.5px dashed #e7ddc3;
+  text-align: center;
+}
+
+.surah-mushaf-name {
+  font-family: "Amiri Quran", "Scheherazade New", serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #4c1d95;
+  line-height: 1.7;
+}
+
+.surah-mushaf-meta {
+  color: #8b86a8;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.surah-mushaf-basmalah {
+  margin: 2px 0 12px;
+  color: #6d28d9;
+  font-family: "Amiri Quran", "Scheherazade New", serif;
+  font-size: 1.35rem;
+  line-height: 1.9;
+  text-align: center;
+}
+
+.surah-mushaf-text {
+  color: #1f1a3d;
+  font-family: "Amiri Quran", "Scheherazade New", serif;
+  font-size: clamp(1.45rem, 3.4vw, 2rem);
+  line-height: 2.35;
+  text-align: right;
+  word-spacing: 0.04em;
+}
+
+.mushaf-ayah {
+  display: inline;
+  padding: 2px 1px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+
+.mushaf-ayah:hover {
+  background: #f0e9ff;
+  color: #5b21b6;
+}
+
+.mushaf-ayah:focus-visible {
+  outline: 2px solid #7c3aed;
+  outline-offset: 1px;
+}
+
+.mushaf-ayah-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55em;
+  height: 1.55em;
+  margin-inline: 4px;
+  border-radius: 999px;
+  border: 1.5px solid #ddd6fe;
+  background: #f5f3ff;
+  color: #7c3aed;
+  font-family: "Tajawal", sans-serif;
+  font-size: 0.58em;
+  font-weight: 800;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.mushaf-ayah.practiced .mushaf-ayah-num {
+  border-color: #fcd34d;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.mushaf-ayah.mastered .mushaf-ayah-num {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.mushaf-ayah-check {
+  margin-inline-start: 1px;
+  color: #16a34a;
+  font-size: 0.6em;
+  font-weight: 800;
+  vertical-align: middle;
+}
+
+.surah-mushaf-foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+
+.mushaf-start-btn {
+  flex: 0 0 auto;
+}
+
+.surah-mushaf-hint {
+  color: #7c6fa8;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.surah-mushaf-progress {
+  margin-inline-start: auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .recite-list-section {
   margin-top: 22px;
 }
@@ -4151,6 +4385,50 @@ kbd {
 
   .ayah-hidden-state {
     min-height: 140px;
+  }
+}
+
+@media (max-width: 760px) {
+  .recite-surah-head {
+    flex-wrap: wrap;
+  }
+
+  .recite-surah-head-side {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .surah-mushaf {
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .surah-mushaf-frame {
+    padding: 14px 13px 16px;
+    border-radius: 18px;
+    outline-offset: -6px;
+  }
+
+  .surah-mushaf-name,
+  .surah-mushaf-basmalah {
+    font-size: 1.15rem;
+  }
+
+  .surah-mushaf-text {
+    font-size: clamp(1.25rem, 5.4vw, 1.65rem);
+    line-height: 2.2;
+  }
+
+  .surah-mushaf-foot {
+    gap: 8px;
+  }
+
+  .mushaf-start-btn {
+    flex: 1 1 100%;
+  }
+
+  .surah-mushaf-progress {
+    margin-inline-start: 0;
   }
 }
 
